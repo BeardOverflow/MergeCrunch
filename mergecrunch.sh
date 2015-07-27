@@ -30,9 +30,11 @@ FORMAT=""
 # Value to "enUS" for force English.
 # Value to "esES" for force Spanish Castillian.
 # Value to "esLA" for force Spanish Mejicano.
-# Value to "fre" for force Français.
-# Value to "ita" for force Italiano.
-# Value to "por" for force Português.
+# Value to "frFR" for force Français.
+# Value to "itIT" for force Italiano.
+# Value to "ptBR" for force Português.
+# Value to "deDE" for force Deutsch.
+# Value to "arME" for force العربية
 SUB_DEFAULT="" 
 
 
@@ -52,7 +54,10 @@ SUB_LANG["itIT","tag"]="ita"
 SUB_LANG["itIT","cty"]="Italiano (Italia)"
 SUB_LANG["ptBR","tag"]="por"
 SUB_LANG["ptBR","cty"]="Português (Brasil)"
-
+SUB_LANG["deDE","tag"]="ger"
+SUB_LANG["deDE","cty"]="Deutsch (Deutschland)"
+SUB_LANG["arME","tag"]="ara"
+SUB_LANG["arME","cty"]="العربية"
 
 # CHECKING...
 if [ ${#} -eq 0 ]
@@ -60,6 +65,7 @@ then
 	echo "Error. MergeCrunch needs a input URL as parameter."
 	echo "Syntaxis:"
 	echo "	${0} -i URL [-f format] [-s force] [-c] [-o output]"
+	exit -1
 fi
 
 if [ -z "$(which youtube-dl)" ]
@@ -127,7 +133,12 @@ mkdir -p "${TMP_DIR}"
 cd "${TMP_DIR}"
 
 # Get Crunchyroll file
-youtube-dl ${FORMAT} --no-continue --no-part --all-subs ${INPUT}
+if [ -n "${SUB_DEFAULT}" ]
+then
+	youtube-dl ${FORMAT} --no-continue --no-part --all-subs --add-header "Accept-Language:${SUB_DEFAULT}" ${INPUT}
+else
+	youtube-dl ${FORMAT} --no-continue --no-part --all-subs ${INPUT}
+fi
 
 # Prepare output filename
 DL_NAME="$(ls *.flv)"
