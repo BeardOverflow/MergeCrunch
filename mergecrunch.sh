@@ -4,7 +4,7 @@
 # Description: Download from Crunchyroll and generate a mkv file with video, subtitles and fonts merged.
 # Author:      José Ángel Pastrana Padilla
 # Last update: 2015-07-27
-# Revision:    3
+# Revision:    4
 
 # DEPENDENCIES:
 
@@ -78,7 +78,7 @@ function handlesignal {
 		rm -r "${TMP_DIR}"
 	fi
 	redcon "Signal received! Abort all and exit!"
-	exit
+	exit -1
 }
 trap handlesignal SIGHUP SIGINT SIGTERM
 
@@ -205,7 +205,7 @@ do
         else
 		echo "Found ${line} font!... Ready."
 	fi
-        FONT_MKV+=("--attach-file $(fc-match -v "${line}" | grep "file:" | cut -d'"' -f2)")
+        FONT_MKV+=("--attach-file '$(fc-match -v "${line}" | grep "file:" | cut -d'"' -f2)'")
 done <<< "$(printf "%s\n" "${fonts[@]}" | sort -u)"
 
 # Launch mkvmerge
@@ -221,7 +221,7 @@ then
 fi
 
 # Final message
-greencon "FINISH!\e[0m\e[1m Output file generated: ${OUTPUT}"
+greencon "FINISH!\e[0m\e[1m Output file generated: $(ls -t "${OUTPUT%.mkv}"* | head -n1)"
 
 # Delete temp dir
 rm -r "${TMP_DIR}"
