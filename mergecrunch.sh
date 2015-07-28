@@ -4,7 +4,7 @@
 # Description: Download from Crunchyroll and generate a mkv file with video, subtitles and fonts merged.
 # Author:      José Ángel Pastrana Padilla
 # Last update: 2015-07-28
-# Revision:    5
+# Revision:    6
 
 # DEPENDENCIES:
 
@@ -129,7 +129,17 @@ do
 			shift
 		;;
 		-o|--output)
-			OUTPUT="${DEST_DIR}/${2}"
+			if [ "${2:0:1}" = "/" ]
+			then
+				OUTPUT="${2}"
+			else
+				OUTPUT="${DEST_DIR}/${2}"
+			fi	
+			if [ -z "$(echo ${OUTPUT##*/} | grep "\.")" ] # Output given is a directory.
+			then
+				DEST_DIR="$(readlink -f "${OUTPUT}")"
+				unset OUTPUT
+			fi
 			shift
 		;;
 		-u|--username)
@@ -249,12 +259,18 @@ done <<< "$(printf "%s\n" "${fonts[@]}" | sort -u)"
 greencon "STEP 4. TIME TO MERGING ALL TO MKV FILE."
 MKVCOMMAND="mkvmerge --output '${OUTPUT}' --language 0:jpn --track-name '0:${DL_NAME%-*.flv}' --language 1:jpn --track-name '1:${DL_NAME%-*.flv}' '(' '${DL_NAME}' ')' ${SUB_MKV[*]} ${FONT_MKV[*]} --title '${DL_NAME%-*.flv}'"
 eval ${MKVCOMMAND} >/dev/null
+if [ ${?} -eq 0 ]
+then
+	echo "Merged completed!"
+else
+	handlesignal "Merge failed! Exitting..."
+fi
 
 # Create sum if crc32 is actived by parameter
 if [ -n "${CRC32}" ]
 then
 	greencon "STEP 5. CALCULATING CRC32 HASH."
-	rhash -Ce "${OUTPUT}" >/dev/null
+	echo "CRC32 sum value is: $(rhash --simple -Ce "${OUTPUT}" | cut -d" " -f1)"
 fi
 
 # Final message

@@ -1,0 +1,19 @@
+2015-07-28
+	-- Rev. 6 --
+		[Bug] Output argument (-o) accepts relative and absolute path correctly.
+	-- Rev. 5 --
+		[New] Support to premium users.
+
+2015-07-27
+	-- Rev. 4 --
+		[Bug] Console shows an incorrect output filename if CRC32 sum had actived.
+		[Bug] Breadcrumb with blackspaces in fonts text.
+	-- Rev. 3 --
+		[Improvement] Console output is cleaner.
+	-- Rev. 2 --
+		[New] Title recognition when you specific a language with argument -s
+		[Improvement] Add patterns for deDE and arME subtitles language.
+
+2015-07-26
+	-- Rev. 1 --
+		[New] First release. Crunchyroll streaming downloads with soft-subs and fonts attachment to mkv file.
