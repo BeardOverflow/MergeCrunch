@@ -8,7 +8,9 @@ MergeCrunch is a small bash script that combine youtube-dl and mkvmerge for get 
 
 The main feature is to generate a mkv file with all availables soft-subtitles and fonts attachment of downloaded files from **Crunchyroll** streaming.
 
-Tested in Ubuntu 14.04
+Now supports to premium users!!
+
+==Tested in Ubuntu 14.04==
 
 ## Dependencies
 
@@ -77,6 +79,19 @@ Argument -s only admit this values:
 ./mergecrunch.sh -i URL_CRUNCH_HERE -c -f 720p -s esES -o 'Sket Dance 01.mkv'
 ```
 Same top, but now output file will renamed as "Sket Dance 01 [CRC32_HERE].mkv"
+
+
+**Premium account (argument -u and -p)**
+```sh
+./mergecrunch.sh -i URL_CRUNCH_HERE -c -f 720p -s esES -o 'Sket Dance 01.mkv' -u BeardOverflow
+```
+Same top, but I am logging in my premium account. The console will prompt for username's password.
+
+However, you may specific your password by command line.
+```sh
+./mergecrunch.sh -i URL_CRUNCH_HERE -c -f 720p -s esES -o 'Sket Dance 01.mkv' -u BeardOverflow -p mysecretpassword
+```
+
 
 ## FEEDBACK, BUGS OR CONTRIBUTION
 - If you need help, I will be glad to help.

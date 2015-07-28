@@ -3,8 +3,8 @@
 # Title:       MergeCrunch
 # Description: Download from Crunchyroll and generate a mkv file with video, subtitles and fonts merged.
 # Author:      José Ángel Pastrana Padilla
-# Last update: 2015-07-27
-# Revision:    4
+# Last update: 2015-07-28
+# Revision:    5
 
 # DEPENDENCIES:
 
@@ -14,6 +14,14 @@
 # - rhash (recommend, but it has not).
 
 # DEFAULT PARAMETERS.
+
+# Argument for specific a premium username Crunchyroll account.
+# By command line, it is "-u username" or "--username username"
+USERNAME="" # Default: "" (Means guest session).
+
+# Argument for specific a password for your username Crunchyroll account.
+# By command line, it is "-p password" or "--password password"
+PASSWORD="" # Default: "" (Means guest session if username is not specific).
 
 # Argument for calculate CRC32 sum after finish and rename file name.
 # By command line, it can be actived by "-c" or "--crc32"
@@ -77,7 +85,12 @@ function handlesignal {
 	then
 		rm -r "${TMP_DIR}"
 	fi
-	redcon "Signal received! Abort all and exit!"
+	if [ ${#} -eq 0 ]
+	then
+		redcon "Signal received! Abort all and exit!"
+	else
+		redcon "${*}"
+	fi
 	exit -1
 }
 trap handlesignal SIGHUP SIGINT SIGTERM
@@ -119,6 +132,14 @@ do
 			OUTPUT="${DEST_DIR}/${2}"
 			shift
 		;;
+		-u|--username)
+			USERNAME="${2}"
+			shift
+		;;
+		-p|--password)
+			PASSWORD="${2}"
+			shift
+		;;
 		-c|--crc32)
 			if [ -z "$(which rhash)" ]
 			then
@@ -129,7 +150,7 @@ do
 			CRC32="YES"
 		;;
 		-f|--format)
-			FORMAT="-f ${2}"
+			FORMAT="${2}"
 			shift
 		;;
 		-s|--sub_default)
@@ -158,11 +179,27 @@ cd "${TMP_DIR}"
 
 # Get Crunchyroll file
 greencon "STEP 1. GET CRUNCHYROLL STREAMING DOWNLOAD."
+if [ -n "${USERNAME}" ]
+then
+	USERNAME="-u ${USERNAME}"
+fi
+if [ -n "${PASSWORD}" ]
+then
+	PASSWORD="-p ${PASSWORD}"
+fi
+if [ -n "${FORMAT}" ]
+then
+	FORMAT="-f ${FORMAT}"
+fi
 if [ -n "${SUB_DEFAULT}" ]
 then
 	HEADER="--add-header Accept-Language:${SUB_DEFAULT}"
 fi
-youtube-dl ${FORMAT} --no-warnings --no-continue --no-part --all-subs ${HEADER} ${INPUT}
+youtube-dl --no-warnings --no-continue --no-part --all-subs ${USERNAME} ${PASSWORD} ${FORMAT} ${HEADER} ${INPUT}
+if [ ${?} -ne 0 ]
+then
+	handlesignal "Failed to get streaming! Exitting..."
+fi
 
 # Prepare output filename
 DL_NAME="$(ls *.flv)"
