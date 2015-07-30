@@ -3,8 +3,8 @@
 # Title:       MergeCrunch
 # Description: Download from Crunchyroll and generate a mkv file with video, subtitles and fonts merged.
 # Author:      José Ángel Pastrana Padilla
-# Last update: 2015-07-28
-# Revision:    6
+# Last update: 2015-07-30
+# Revision:    7
 
 # DEPENDENCIES:
 
@@ -68,6 +68,8 @@ SUB_LANG["deDE","tag"]="ger"
 SUB_LANG["deDE","cty"]="Deutsch (Deutschland)"
 SUB_LANG["arME","tag"]="ara"
 SUB_LANG["arME","cty"]="العربية"
+SUB_LANG["trTR","tag"]="tur"
+SUB_LANG["trTR","cty"]="Türkçe (Türkiye)"
 
 
 # A SIMPLES FUNCTIONS FOR COLOURED OUTPUT TEXT
@@ -84,6 +86,10 @@ function handlesignal {
 	if [ -d "${TMP_DIR}" ]
 	then
 		rm -r "${TMP_DIR}"
+	fi
+	if [ -f "${TMP_FILE}" ]
+	then
+		rm "${TMP_FILE}"
 	fi
 	if [ ${#} -eq 0 ]
 	then
@@ -183,99 +189,130 @@ done
 
 
 # MAIN...
-# Prepare temp dir
-mkdir -p "${TMP_DIR}"
-cd "${TMP_DIR}"
-
-# Get Crunchyroll file
-greencon "STEP 1. GET CRUNCHYROLL STREAMING DOWNLOAD."
-if [ -n "${USERNAME}" ]
+# Check playlist...
+TMP_FILE="/tmp/${$}-check"
+wget "${INPUT}" -qO "${TMP_FILE}"
+if [ -z "$(cat "${TMP_FILE}" | grep 'link rel="index"')" ] # Input URL is a playlist
 then
-	USERNAME="-u ${USERNAME}"
-fi
-if [ -n "${PASSWORD}" ]
-then
-	PASSWORD="-p ${PASSWORD}"
-fi
-if [ -n "${FORMAT}" ]
-then
-	FORMAT="-f ${FORMAT}"
-fi
-if [ -n "${SUB_DEFAULT}" ]
-then
-	HEADER="--add-header Accept-Language:${SUB_DEFAULT}"
-fi
-youtube-dl --no-warnings --no-continue --no-part --all-subs ${USERNAME} ${PASSWORD} ${FORMAT} ${HEADER} ${INPUT}
-if [ ${?} -ne 0 ]
-then
-	handlesignal "Failed to get streaming! Exitting..."
-fi
-
-# Prepare output filename
-DL_NAME="$(ls *.flv)"
-if [ -z "${OUTPUT}" ]
-then
-	OUTPUT="${DEST_DIR}/${DL_NAME%-*.flv}.mkv"
-fi
-
-# Prepare subtitles downloaded for will merge to output file
-greencon "STEP 2. CHECKING AVAILABLE SUBTITLES."
-for each in *.ass
-do
-	sl=${each%.ass}
-	sl=${sl##*.}
-	unset def
-	if [ "${SUB_DEFAULT}" = "${sl}" ]
+	greencon "[Analyze] INPUT URL IS A PLAYLIST. ENQUEUING..."
+	if [ -n "${OUTPUT}" ]
 	then
-		def="--default-track 0:yes"
+		handlesignal "Output argument must be a directory when input argument is a playlist URL."
 	fi
-	echo "Found ${SUB_LANG["${sl}","cty"]} subtitle!... Ready."
-	SUB_MKV+=("--language 0:${SUB_LANG["${sl}","tag"]} --track-name '0:${SUB_LANG["${sl}","cty"]}' ${def} '(' '${each}' ')'")
-done
-
-# Searching for fonts attachments
-greencon "STEP 3. CHECKING AVAILABLES ATTACHMENT FONTS TEXT."
-for each in *.ass
-do
-        while read -r line
-        do
-                fonts+=("${line}")
-        done <<< "$(cat "${each}" | grep "^Style:" | cut -d"," -f2 | sort -u)"
-done
-
-while read -r line
-do
-        found=$(fc-match "${line}" | cut -d'"' -f2)
-        if [ "${found}" != "${line}" ]
-        then
-                redcon "WARNING: REQUEST FONT <<< ${line} >>> IS NOT INSTALLED IN YOUR SYSTEM. PLEASE, INSTALL IT AND TRY AGAIN. WHILE I WILL BE USE <<< ${found} >>>."
-        else
-		echo "Found ${line} font!... Ready."
-	fi
-        FONT_MKV+=("--attach-file '$(fc-match -v "${line}" | grep "file:" | cut -d'"' -f2)'")
-done <<< "$(printf "%s\n" "${fonts[@]}" | sort -u)"
-
-# Launch mkvmerge
-greencon "STEP 4. TIME TO MERGING ALL TO MKV FILE."
-MKVCOMMAND="mkvmerge --output '${OUTPUT}' --language 0:jpn --track-name '0:${DL_NAME%-*.flv}' --language 1:jpn --track-name '1:${DL_NAME%-*.flv}' '(' '${DL_NAME}' ')' ${SUB_MKV[*]} ${FONT_MKV[*]} --title '${DL_NAME%-*.flv}'"
-eval ${MKVCOMMAND} >/dev/null
-if [ ${?} -eq 0 ]
-then
-	echo "Merged completed!"
+	while read -r line
+	do
+		inputs+=("http://www.crunchyroll.com${line}")
+		echo "http://www.crunchyroll.com${line} ready!"
+	done <<< "$(tac "${TMP_FILE}" | grep "portrait-element block-link titlefix episode" | cut -d'"' -f2)"
 else
-	handlesignal "Merge failed! Exitting..."
+	greencon "[Analyze] INPUT URL IS A SIMPLE URL. ENQUEUING..."
+	inputs+=("${INPUT}")
+	echo "${INPUT} ready!"
 fi
+rm -r "${TMP_FILE}"
 
-# Create sum if crc32 is actived by parameter
-if [ -n "${CRC32}" ]
-then
-	greencon "STEP 5. CALCULATING CRC32 HASH."
-	echo "CRC32 sum value is: $(rhash --simple -Ce "${OUTPUT}" | cut -d" " -f1)"
-fi
+c=0
+for INPUT in "${inputs[@]}"
+do
+	c=$((c+1))
+	(
+	# Prepare temp dir
+	mkdir -p "${TMP_DIR}"
+	cd "${TMP_DIR}"
 
-# Final message
-greencon "FINISH!\e[0m\e[1m Output file generated: $(ls -t "${OUTPUT%.mkv}"* | head -n1)"
+	# Get Crunchyroll file
+	greencon "STEP 0. QUEUE INPUT URL #${c}."
+	echo "${INPUT}"
+	greencon "STEP 1. GET CRUNCHYROLL STREAMING DOWNLOAD."
+	if [ -n "${USERNAME}" ]
+	then
+		USERNAME="-u ${USERNAME}"
+	fi
+	if [ -n "${PASSWORD}" ]
+	then
+		PASSWORD="-p ${PASSWORD}"
+	fi
+	if [ -n "${FORMAT}" ]
+	then
+		FORMAT="-f ${FORMAT}"
+	fi
+	if [ -n "${SUB_DEFAULT}" ]
+	then
+		HEADER="--add-header Accept-Language:${SUB_DEFAULT}"
+	fi
+	youtube-dl --no-warnings --no-continue --no-part --all-subs ${USERNAME} ${PASSWORD} ${FORMAT} ${HEADER} ${INPUT}
+	if [ ${?} -ne 0 ]
+	then
+		handlesignal "Failed to get streaming! Exitting..."
+	fi
 
-# Delete temp dir
-rm -r "${TMP_DIR}"
+	# Prepare output filename
+	DL_NAME="$(ls *.flv)"
+	if [ -z "${OUTPUT}" ]
+	then
+		OUTPUT="${DEST_DIR}/${DL_NAME%-*.flv}.mkv"
+	fi
+
+	# Prepare subtitles downloaded for will merge to output file
+	greencon "STEP 2. CHECKING AVAILABLE SUBTITLES."
+	for each in *.ass
+	do
+		sl=${each%.ass}
+		sl=${sl##*.}
+		unset def
+		if [ "${SUB_DEFAULT}" = "${sl}" ]
+		then
+			def="--default-track 0:yes"
+		fi
+		echo "Found ${SUB_LANG["${sl}","cty"]} subtitle!... Ready."
+		SUB_MKV+=("--language 0:${SUB_LANG["${sl}","tag"]} --track-name '0:${SUB_LANG["${sl}","cty"]}' ${def} '(' '${each}' ')'")
+	done
+
+	# Searching for fonts attachments
+	greencon "STEP 3. CHECKING AVAILABLES ATTACHMENT FONTS TEXT."
+	for each in *.ass
+	do
+		while read -r line
+		do
+		        fonts+=("${line}")
+		done <<< "$(cat "${each}" | grep "^Style:" | cut -d"," -f2 | sort -u)"
+	done
+
+	while read -r line
+	do
+		found=$(fc-match "${line}" | cut -d'"' -f2)
+		if [ "${found}" != "${line}" ]
+		then
+		        redcon "WARNING: REQUEST FONT <<< ${line} >>> IS NOT INSTALLED IN YOUR SYSTEM. PLEASE, INSTALL IT AND TRY AGAIN. WHILE I WILL BE USE <<< ${found} >>>."
+		else
+			echo "Found ${line} font!... Ready."
+		fi
+		FONT_MKV+=("--attach-file '$(fc-match -v "${line}" | grep "file:" | cut -d'"' -f2)'")
+	done <<< "$(printf "%s\n" "${fonts[@]}" | sort -u)"
+
+	# Launch mkvmerge
+	greencon "STEP 4. TIME TO MERGING ALL TO MKV FILE."
+	MKVCOMMAND="mkvmerge --output '${OUTPUT}' --language 0:jpn --track-name '0:${DL_NAME%-*.flv}' --language 1:jpn --track-name '1:${DL_NAME%-*.flv}' '(' '${DL_NAME}' ')' ${SUB_MKV[*]} ${FONT_MKV[*]} --title '${DL_NAME%-*.flv}'"
+	eval ${MKVCOMMAND} >/dev/null
+	if [ ${?} -eq 0 ]
+	then
+		echo "Merge completed!"
+	else
+		handlesignal "Merge failed! Exitting..."
+	fi
+
+	# Create sum if crc32 is actived by parameter
+	if [ -n "${CRC32}" ]
+	then
+		greencon "STEP 5. CALCULATING CRC32 HASH."
+		echo "CRC32 sum value is: $(rhash --simple -Ce "${OUTPUT}" | cut -d" " -f1)"
+	fi
+
+	# Final message
+	greencon "FINISH!\e[0m\e[1m Output file generated: $(ls -t "${OUTPUT%.mkv}"* | head -n1)"
+
+	# Delete temp dir
+	rm -r "${TMP_DIR}"
+	)
+done
 

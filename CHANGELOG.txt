@@ -1,3 +1,8 @@
+2015-07-30
+	-- Rev. 7 --
+		[New] Support for playlist URL.
+		[Improvement] Add pattern for trTR subtitle language.
+
 2015-07-28
 	-- Rev. 6 --
 		[Bug] Output argument (-o) accepts relative and absolute path correctly.
