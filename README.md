@@ -8,7 +8,8 @@ MergeCrunch is a small bash script that combine youtube-dl and mkvmerge for get 
 
 The main feature is to generate a mkv file with all availables soft-subtitles and fonts attachment of downloaded files from **Crunchyroll** streaming.
 
-Now supports to premium users!!
+Now support to premium users!!
+Now support to playlist URLs and playlist selection!!
 
 ==Tested in Ubuntu 14.04==
 
@@ -81,7 +82,7 @@ Argument -s only admit this values:
 Same top, but now output file will renamed as "Sket Dance 01 [CRC32_HERE].mkv"
 
 
-**Premium account (argument -u and -p)**
+**Premium account (argument -u and -p):**
 ```sh
 ./mergecrunch.sh -i URL_CRUNCH_HERE -c -f 720p -s esES -o 'Sket Dance 01.mkv' -u BeardOverflow
 ```
@@ -90,6 +91,28 @@ Same top, but I am logging in my premium account. The console will prompt for us
 However, you may specific your password by command line.
 ```sh
 ./mergecrunch.sh -i URL_CRUNCH_HERE -c -f 720p -s esES -o 'Sket Dance 01.mkv' -u BeardOverflow -p mysecretpassword
+```
+
+**Playlist selection (append # character in input URL):**
+
+For playlist selection, you must append the # character in input URL. After, according to selection syntaxis:
+- "N-M" for select range from N to M.
+- "N" for simple selection.
+- "," as separator for multiple selections.
+
+Example #1. Select IDs items from 12 to 20.
+```sh
+./mergecrunch.sh -i URL_PLAYLIST_CRUNCH_HERE#12-20
+```
+
+Example #2. Select ID item 5.
+```sh
+./mergecrunch.sh -i URL_PLAYLIST_CRUNCH_HERE#5
+```
+
+Example #3. Select IDs items from 12 to 20 and also 2, 5, 23 to 30.
+```sh
+./mergecrunch.sh -i URL_PLAYLIST_CRUNCH_HERE#12-20,2,5,23-30
 ```
 
 

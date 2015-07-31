@@ -1,3 +1,8 @@
+2015-07-31
+	-- Rev. 8 --
+		[Improvement] Playlist selection.
+		[Bug] Some titles with rare characters as ' breaks mkvmerge.
+
 2015-07-30
 	-- Rev. 7 --
 		[New] Support for playlist URL.

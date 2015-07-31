@@ -3,8 +3,8 @@
 # Title:       MergeCrunch
 # Description: Download from Crunchyroll and generate a mkv file with video, subtitles and fonts merged.
 # Author:      José Ángel Pastrana Padilla
-# Last update: 2015-07-30
-# Revision:    7
+# Last update: 2015-07-31
+# Revision:    8
 
 # DEPENDENCIES:
 
@@ -186,6 +186,22 @@ do
 	esac
 	shift
 done
+if [ -n "${USERNAME}" ]
+then
+	USERNAME="-u ${USERNAME}"
+fi
+if [ -n "${PASSWORD}" ]
+then
+	PASSWORD="-p ${PASSWORD}"
+fi
+if [ -n "${FORMAT}" ]
+then
+	FORMAT="-f ${FORMAT}"
+fi
+if [ -n "${SUB_DEFAULT}" ]
+then
+	HEADER="--add-header Accept-Language:${SUB_DEFAULT}"
+fi
 
 
 # MAIN...
@@ -199,10 +215,32 @@ then
 	then
 		handlesignal "Output argument must be a directory when input argument is a playlist URL."
 	fi
+	SEGMENT="${INPUT##*#}"
+	if [ -n "${SEGMENT}" ] && [ "${INPUT}" != "${SEGMENT}" ]
+	then
+		while read -r line
+		do
+			if [ -n "$(echo "${line}" | grep "-")" ]
+			then
+				SELECTION+="$(seq -s " " ${line/-/ }) "
+			else
+				SELECTION+="${line} "
+			fi
+		done <<< "$(echo -e "${SEGMENT//,/\\n}")"
+		greencon "---> SELECTED ID ITEMS FROM THIS PLAYLIST: ${SELECTION} <---"
+	fi	
+	c=0
 	while read -r line
 	do
+		c=$((c+1))
 		inputs+=("http://www.crunchyroll.com${line}")
-		echo "http://www.crunchyroll.com${line} ready!"
+		if [ -z "${SELECTION}" ] || [ -n "$(echo "${SELECTION}" | grep "${c}")" ]
+		then
+			echo -en "\e[1m[Selected]\e[0m "
+		else
+			echo -n "[Not Selected] "
+		fi
+		echo "ID: ${c}, URL: http://www.crunchyroll.com${line}"
 	done <<< "$(tac "${TMP_FILE}" | grep "portrait-element block-link titlefix episode" | cut -d'"' -f2)"
 else
 	greencon "[Analyze] INPUT URL IS A SIMPLE URL. ENQUEUING..."
@@ -211,11 +249,17 @@ else
 fi
 rm -r "${TMP_FILE}"
 
+# LOOP FOR PLAYLIST
 c=0
 for INPUT in "${inputs[@]}"
 do
 	c=$((c+1))
+	if [ -z "${SELECTION}" ] || [ -n "$(echo "${SELECTION}" | grep "${c}")" ]
+	then
 	(
+	# A line extra for to format console output :P
+	echo 
+
 	# Prepare temp dir
 	mkdir -p "${TMP_DIR}"
 	cd "${TMP_DIR}"
@@ -224,22 +268,6 @@ do
 	greencon "STEP 0. QUEUE INPUT URL #${c}."
 	echo "${INPUT}"
 	greencon "STEP 1. GET CRUNCHYROLL STREAMING DOWNLOAD."
-	if [ -n "${USERNAME}" ]
-	then
-		USERNAME="-u ${USERNAME}"
-	fi
-	if [ -n "${PASSWORD}" ]
-	then
-		PASSWORD="-p ${PASSWORD}"
-	fi
-	if [ -n "${FORMAT}" ]
-	then
-		FORMAT="-f ${FORMAT}"
-	fi
-	if [ -n "${SUB_DEFAULT}" ]
-	then
-		HEADER="--add-header Accept-Language:${SUB_DEFAULT}"
-	fi
 	youtube-dl --no-warnings --no-continue --no-part --all-subs ${USERNAME} ${PASSWORD} ${FORMAT} ${HEADER} ${INPUT}
 	if [ ${?} -ne 0 ]
 	then
@@ -265,7 +293,7 @@ do
 			def="--default-track 0:yes"
 		fi
 		echo "Found ${SUB_LANG["${sl}","cty"]} subtitle!... Ready."
-		SUB_MKV+=("--language 0:${SUB_LANG["${sl}","tag"]} --track-name '0:${SUB_LANG["${sl}","cty"]}' ${def} '(' '${each}' ')'")
+		SUB_MKV+=("--language \"0:${SUB_LANG["${sl}","tag"]}\" --track-name \"0:${SUB_LANG["${sl}","cty"]}\" ${def} '(' \"${each}\" ')'")
 	done
 
 	# Searching for fonts attachments
@@ -287,12 +315,12 @@ do
 		else
 			echo "Found ${line} font!... Ready."
 		fi
-		FONT_MKV+=("--attach-file '$(fc-match -v "${line}" | grep "file:" | cut -d'"' -f2)'")
+		FONT_MKV+=("--attach-file \"$(fc-match -v "${line}" | grep "file:" | cut -d'"' -f2)\"")
 	done <<< "$(printf "%s\n" "${fonts[@]}" | sort -u)"
 
 	# Launch mkvmerge
 	greencon "STEP 4. TIME TO MERGING ALL TO MKV FILE."
-	MKVCOMMAND="mkvmerge --output '${OUTPUT}' --language 0:jpn --track-name '0:${DL_NAME%-*.flv}' --language 1:jpn --track-name '1:${DL_NAME%-*.flv}' '(' '${DL_NAME}' ')' ${SUB_MKV[*]} ${FONT_MKV[*]} --title '${DL_NAME%-*.flv}'"
+	MKVCOMMAND="mkvmerge --output \"${OUTPUT}\" --language 0:jpn --track-name \"0:${DL_NAME%-*.flv}\" --language 1:jpn --track-name \"1:${DL_NAME%-*.flv}\" '(' \"${DL_NAME}\" ')' ${SUB_MKV[*]} ${FONT_MKV[*]} --title \"${DL_NAME%-*.flv}\""
 	eval ${MKVCOMMAND} >/dev/null
 	if [ ${?} -eq 0 ]
 	then
@@ -314,5 +342,6 @@ do
 	# Delete temp dir
 	rm -r "${TMP_DIR}"
 	)
+	fi
 done
 
