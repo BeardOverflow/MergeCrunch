@@ -1,3 +1,8 @@
+2015-07-02
+	-- Rev. 9 --
+		[Improvement] Considering style for font matching (Arial Narrow, I see you).
+		[Bug] Instability for invalid links with errors due to restricted region or other reason.
+
 2015-07-31
 	-- Rev. 8 --
 		[Improvement] Playlist selection.

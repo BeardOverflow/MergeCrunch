@@ -3,8 +3,8 @@
 # Title:       MergeCrunch
 # Description: Download from Crunchyroll and generate a mkv file with video, subtitles and fonts merged.
 # Author:      José Ángel Pastrana Padilla
-# Last update: 2015-07-31
-# Revision:    8
+# Last update: 2015-08-02
+# Revision:    9
 
 # DEPENDENCIES:
 
@@ -121,7 +121,7 @@ fi
 if [ -z "$(which mkvmerge)" ]
 then
 	echo "Please, first install mkvtoolnix package."
-	echo "Run 'sudo apt-get install mkvtoolnix mkvtoolnix-gui' and try again."
+	echo "Run 'sudo apt-get install mkvtoolnix' and try again."
 	exit -1
 fi
 
@@ -208,6 +208,8 @@ fi
 # Check playlist...
 TMP_FILE="/tmp/${$}-check"
 wget "${INPUT}" -qO "${TMP_FILE}"
+if [ -z "$(cat "${TMP_FILE}" | grep '"type":"error"')" ] # Check URL errors
+then
 if [ -z "$(cat "${TMP_FILE}" | grep 'link rel="index"')" ] # Input URL is a playlist
 then
 	greencon "[Analyze] INPUT URL IS A PLAYLIST. ENQUEUING..."
@@ -246,6 +248,10 @@ else
 	greencon "[Analyze] INPUT URL IS A SIMPLE URL. ENQUEUING..."
 	inputs+=("${INPUT}")
 	echo "${INPUT} ready!"
+fi
+else
+	youtube-dl -s ${USERNAME} ${PASSWORD} ${FORMAT} ${HEADER} ${INPUT}
+	handlesignal "Exitting due to an error in input URL..."
 fi
 rm -r "${TMP_FILE}"
 
@@ -308,12 +314,14 @@ do
 
 	while read -r line
 	do
-		found=$(fc-match "${line}" | cut -d'"' -f2)
-		if [ "${found}" != "${line}" ]
+		queryfc="$(fc-match "${line}")"
+		foundName="$(echo ${queryfc} | cut -d'"' -f2)"
+		foundStyle="$(echo ${queryfc} | cut -d'"' -f4)"
+		if [ "${foundName,,}" = "${line,,}" ] || [ "$(echo "${foundName,,} ${foundStyle,,}" | xargs)" = "$(echo "${line,,}" | xargs)" ]
 		then
-		        redcon "WARNING: REQUEST FONT <<< ${line} >>> IS NOT INSTALLED IN YOUR SYSTEM. PLEASE, INSTALL IT AND TRY AGAIN. WHILE I WILL BE USE <<< ${found} >>>."
+		        echo "Found ${line} font!... Ready."
 		else
-			echo "Found ${line} font!... Ready."
+			redcon "WARNING: REQUEST FONT <<< ${line} >>> IS NOT INSTALLED IN YOUR SYSTEM. PLEASE, INSTALL IT AND TRY AGAIN. WHILE I WILL BE USE <<< ${foundName} >>>."
 		fi
 		FONT_MKV+=("--attach-file \"$(fc-match -v "${line}" | grep "file:" | cut -d'"' -f2)\"")
 	done <<< "$(printf "%s\n" "${fonts[@]}" | sort -u)"

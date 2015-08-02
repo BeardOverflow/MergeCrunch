@@ -21,6 +21,9 @@ Rhash is recommended for can calculate CRC32 hash sum.
 
 For get this dependencies, execute the classic sudo apt-get install.
 
+Note 1. For youtube-dl, I recommend to use [nilarimogard's ppa](https://launchpad.net/~nilarimogard/+archive/ubuntu/webupd8).
+Note 2. For mkvtoolnix, I recommend to use [custom Bunkus' repository](https://www.bunkus.org/videotools/mkvtoolnix/downloads.html#ubuntu). 
+
 ```sh
 sudo apt-get install youtube-dl
 sudo apt-get install mkvtoolnix
