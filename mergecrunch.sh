@@ -5,7 +5,7 @@
 # Author:      José Ángel Pastrana Padilla
 # Email:       japp0005@red.ujaen.es
 # Last update: 2015-08-03
-# Revision:    10
+# Revision:    11
 
 # DEPENDENCIES:
 
@@ -79,6 +79,9 @@ function greencon {
 }
 function redcon {
 	echo -e "\e[1m\e[91m${*}\e[0m"
+}
+function yellowcon {
+	echo -e "\e[1m\e[93m${*}\e[0m"
 }
 
 
@@ -239,11 +242,11 @@ then
 		inputs+=("http://www.crunchyroll.com${line}")
 		if [ -z "${SELECTION}" ] || [ -n "$(echo "${SELECTION}" | tr " " "\n" | grep "^${c}$")" ]
 		then
-			echo -en "\e[1m[Selected]\e[0m "
+			echo -en "\e[1m[Selected] \e[42m"
 		else
 			echo -n "[Not Selected] "
 		fi
-		echo "ID: ${c}, URL: http://www.crunchyroll.com${line}"
+		echo -e "ID: ${c}, URL: http://www.crunchyroll.com${line}\e[0m"
 	done <<< "$(tac "${TMP_FILE}" | grep "portrait-element block-link titlefix episode" | cut -d'"' -f2)"
 else
 	greencon "[Analyze] INPUT URL IS A SIMPLE URL. ENQUEUING..."
@@ -329,14 +332,13 @@ do
 
 	# Launch mkvmerge
 	greencon "STEP 4. TIME TO MERGING ALL TO MKV FILE."
-	MKVCOMMAND="mkvmerge --output \"${OUTPUT}\" --language 0:jpn --track-name \"0:${DL_NAME%-*.flv}\" --language 1:jpn --track-name \"1:${DL_NAME%-*.flv}\" '(' \"${DL_NAME}\" ')' ${SUB_MKV[*]} ${FONT_MKV[*]} --title \"${DL_NAME%-*.flv}\""
-	eval ${MKVCOMMAND} >/dev/null
-	if [ ${?} -eq 0 ]
-	then
-		echo "Merge completed!"
-	else
-		handlesignal "Merge failed! Exitting..."
-	fi
+	MKVCOMMAND="mkvmerge --output \"${OUTPUT}\" --language 0:jpn --track-name \"0:${DL_NAME%-*.flv}\" --language 1:jpn --track-name \"1:${DL_NAME%-*.flv}\" '(' \"${DL_NAME}\" ')' ${SUB_MKV[*]} ${FONT_MKV[*]} --title \"${DL_NAME%-*.flv}\" -q"
+	eval ${MKVCOMMAND}
+	case "${?}" in
+		0) echo "Merge completed!";;
+		1) yellowcon "Merge completed with WARNINGS!";;
+		2) handlesignal "Merge failed! Exitting...";;
+	esac
 
 	# Create sum if crc32 is actived by parameter
 	if [ -n "${CRC32}" ]

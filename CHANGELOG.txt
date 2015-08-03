@@ -1,4 +1,6 @@
 2015-08-03
+	-- Rev. 11 --
+		[Improvement] Warnings in mkvmerge are accepted as valid file and console output shows this situation.
 	-- Rev. 10 --
 		[Bug] Playlist selection gets more IDs than you request. (For example, you request 5 and it selects 5 and 50).
 
