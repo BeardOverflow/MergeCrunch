@@ -1,4 +1,8 @@
-2015-07-02
+2015-08-03
+	-- Rev. 10 --
+		[Bug] Playlist selection gets more IDs than you request. (For example, you request 5 and it selects 5 and 50).
+
+2015-08-02
 	-- Rev. 9 --
 		[Improvement] Considering style for font matching (Arial Narrow, I see you).
 		[Bug] Instability for invalid links with errors due to restricted region or other reason.

@@ -3,12 +3,13 @@
 # Title:       MergeCrunch
 # Description: Download from Crunchyroll and generate a mkv file with video, subtitles and fonts merged.
 # Author:      José Ángel Pastrana Padilla
-# Last update: 2015-08-02
-# Revision:    9
+# Email:       japp0005@red.ujaen.es
+# Last update: 2015-08-03
+# Revision:    10
 
 # DEPENDENCIES:
 
-# - Enough fonts installed in your system (if any missing, put inside in folder ~/.fonts)!
+# - Enough fonts installed in your system (if any missing, put inside in ~/.fonts folder)!
 # - youtube-dl
 # - mkvmerge
 # - rhash (recommend, but it has not).
@@ -236,7 +237,7 @@ then
 	do
 		c=$((c+1))
 		inputs+=("http://www.crunchyroll.com${line}")
-		if [ -z "${SELECTION}" ] || [ -n "$(echo "${SELECTION}" | grep "${c}")" ]
+		if [ -z "${SELECTION}" ] || [ -n "$(echo "${SELECTION}" | tr " " "\n" | grep "^${c}$")" ]
 		then
 			echo -en "\e[1m[Selected]\e[0m "
 		else
@@ -260,7 +261,7 @@ c=0
 for INPUT in "${inputs[@]}"
 do
 	c=$((c+1))
-	if [ -z "${SELECTION}" ] || [ -n "$(echo "${SELECTION}" | grep "${c}")" ]
+	if [ -z "${SELECTION}" ] || [ -n "$(echo "${SELECTION}" | tr " " "\n" | grep "^${c}$")" ]
 	then
 	(
 	# A line extra for to format console output :P

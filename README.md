@@ -9,6 +9,7 @@ MergeCrunch is a small bash script that combine youtube-dl and mkvmerge for get 
 The main feature is to generate a mkv file with all availables soft-subtitles and fonts attachment of downloaded files from **Crunchyroll** streaming.
 
 Now support to premium users!!
+
 Now support to playlist URLs and playlist selection!!
 
 ==Tested in Ubuntu 14.04==
@@ -22,6 +23,7 @@ Rhash is recommended for can calculate CRC32 hash sum.
 For get this dependencies, execute the classic sudo apt-get install.
 
 Note 1. For youtube-dl, I recommend to use [nilarimogard's ppa](https://launchpad.net/~nilarimogard/+archive/ubuntu/webupd8).
+
 Note 2. For mkvtoolnix, I recommend to use [custom Bunkus' repository](https://www.bunkus.org/videotools/mkvtoolnix/downloads.html#ubuntu). 
 
 ```sh
