@@ -4,8 +4,8 @@
 # Description: Download from Crunchyroll and generate a mkv file with video, subtitles and fonts merged.
 # Author:      José Ángel Pastrana Padilla
 # Email:       japp0005@red.ujaen.es
-# Last update: 2015-08-03
-# Revision:    11
+# Last update: 2015-09-07
+# Revision:    12
 
 # DEPENDENCIES:
 
@@ -240,7 +240,7 @@ then
 	do
 		c=$((c+1))
 		inputs+=("http://www.crunchyroll.com${line}")
-		if [ -z "${SELECTION}" ] || [ -n "$(echo "${SELECTION}" | tr " " "\n" | grep "^${c}$")" ]
+		if [ -z "${SELECTION}" ] || [ -n "$(echo -e "${SELECTION// /\\n}" | grep "^${c}$")" ]
 		then
 			echo -en "\e[1m[Selected] \e[42m"
 		else
@@ -264,7 +264,7 @@ c=0
 for INPUT in "${inputs[@]}"
 do
 	c=$((c+1))
-	if [ -z "${SELECTION}" ] || [ -n "$(echo "${SELECTION}" | tr " " "\n" | grep "^${c}$")" ]
+	if [ -z "${SELECTION}" ] || [ -n "$(echo -e "${SELECTION// /\\n}" | grep "^${c}$")" ]
 	then
 	(
 	# A line extra for to format console output :P
@@ -285,10 +285,10 @@ do
 	fi
 
 	# Prepare output filename
-	DL_NAME="$(ls *.flv)"
+	DL_NAME="$(ls *.flv *.mp4)"
 	if [ -z "${OUTPUT}" ]
 	then
-		OUTPUT="${DEST_DIR}/${DL_NAME%-*.flv}.mkv"
+		OUTPUT="${DEST_DIR}/${DL_NAME%-*}.mkv"
 	fi
 
 	# Prepare subtitles downloaded for will merge to output file
@@ -332,7 +332,7 @@ do
 
 	# Launch mkvmerge
 	greencon "STEP 4. TIME TO MERGING ALL TO MKV FILE."
-	MKVCOMMAND="mkvmerge --output \"${OUTPUT}\" --language 0:jpn --track-name \"0:${DL_NAME%-*.flv}\" --language 1:jpn --track-name \"1:${DL_NAME%-*.flv}\" '(' \"${DL_NAME}\" ')' ${SUB_MKV[*]} ${FONT_MKV[*]} --title \"${DL_NAME%-*.flv}\" -q"
+	MKVCOMMAND="mkvmerge --output \"${OUTPUT}\" --language 0:jpn --track-name \"0:${DL_NAME%-*}\" --language 1:jpn --track-name \"1:${DL_NAME%-*}\" '(' \"${DL_NAME}\" ')' ${SUB_MKV[*]} ${FONT_MKV[*]} --title \"${DL_NAME%-*}\" -q"
 	eval ${MKVCOMMAND}
 	case "${?}" in
 		0) echo "Merge completed!";;

@@ -1,3 +1,7 @@
+2015-09-07
+	-- Rev. 12 --
+		[Improvement] Detecting new streaming container (mp4).
+
 2015-08-03
 	-- Rev. 11 --
 		[Improvement] Warnings in mkvmerge are accepted as valid file and console output shows this situation.
