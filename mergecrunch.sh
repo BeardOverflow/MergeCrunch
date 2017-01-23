@@ -4,8 +4,8 @@
 # Description: Download from Crunchyroll and generate a mkv file with video, subtitles and fonts merged.
 # Author:      José Ángel Pastrana Padilla
 # Email:       japp0005@red.ujaen.es
-# Last update: 2015-09-07
-# Revision:    12
+# Last update: 2017-01-23
+# Revision:    13
 
 # DEPENDENCIES:
 
@@ -285,7 +285,7 @@ do
 	fi
 
 	# Prepare output filename
-	DL_NAME="$(ls *.flv *.mp4)"
+	DL_NAME="$(ls *.flv *.mp4 2>/dev/null)"
 	if [ -z "${OUTPUT}" ]
 	then
 		OUTPUT="${DEST_DIR}/${DL_NAME%-*}.mkv"
