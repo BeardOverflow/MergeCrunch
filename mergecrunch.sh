@@ -4,8 +4,8 @@
 # Description: Download from Crunchyroll and generate a mkv file with video, subtitles and fonts merged.
 # Author:      José Ángel Pastrana Padilla
 # Email:       japp0005@red.ujaen.es
-# Last update: 2017-01-23
-# Revision:    13
+# Last update: 2018-01-02
+# Revision:    14
 
 # DEPENDENCIES:
 
@@ -46,6 +46,7 @@ FORMAT=""
 # Value to "ptBR" for force Português.
 # Value to "deDE" for force Deutsch.
 # Value to "arME" for force العربية
+# Value to "ruRU" for force Русский
 SUB_DEFAULT="" 
 
 
@@ -71,6 +72,8 @@ SUB_LANG["arME","tag"]="ara"
 SUB_LANG["arME","cty"]="العربية"
 SUB_LANG["trTR","tag"]="tur"
 SUB_LANG["trTR","cty"]="Türkçe (Türkiye)"
+SUB_LANG["ruRU","tag"]="rus"
+SUB_LANG["ruRU","cty"]="Русский (Россия)"
 
 
 # A SIMPLES FUNCTIONS FOR COLOURED OUTPUT TEXT
@@ -247,7 +250,7 @@ then
 			echo -n "[Not Selected] "
 		fi
 		echo -e "ID: ${c}, URL: http://www.crunchyroll.com${line}\e[0m"
-	done <<< "$(tac "${TMP_FILE}" | grep "portrait-element block-link titlefix episode" | cut -d'"' -f2)"
+	done <<< "$(tac "${TMP_FILE}" | grep -A1 --no-group-separator 'portrait-element block-link titlefix episode' | grep -v 'portrait-element block-link titlefix episode' | cut -d'"' -f2)"
 else
 	greencon "[Analyze] INPUT URL IS A SIMPLE URL. ENQUEUING..."
 	inputs+=("${INPUT}")

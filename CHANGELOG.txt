@@ -1,3 +1,8 @@
+2018-01-02
+        -- Rev. 14 --
+                [Bug] Web scraping was failing for playlist url.
+                [Improvement] Add pattern for ruRU subtitle language.
+
 2017-01-23
 	-- Rev. 13 --
 		[Improvement] Supress dummy message using ls command.
