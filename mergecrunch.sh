@@ -5,7 +5,7 @@
 # Author:      José Ángel Pastrana Padilla
 # Email:       japp0005@red.ujaen.es
 # Last update: 2018-01-02
-# Revision:    15
+# Revision:    16
 
 # DEPENDENCIES:
 
@@ -35,8 +35,7 @@ CRC32="" # Default: "" (Means disabled). Change to "YES" for always active
 # This argument sets video resolution.
 # By command line, it is "-f value" or "--format value".
 # Default: "" (Means best resolution). 
-# Change to other value as "480p", "720p", "1080p".
-# If there are any problem, try "480p-0", "720p-0", "1080p-1", "480p-1", "720p-1", "1080p-0", "1080p-1".
+# Change to other value as "worst", "360p", "480p", "720p", "1080p", "best".
 FORMAT=""
 
 # This argument sets default track subtitle if your player doesn't set this field.
@@ -57,6 +56,17 @@ SUB_DEFAULT=""
 # NEED THIS VARIABLES...
 TMP_DIR="/tmp/${$}"
 DEST_DIR="$(pwd)"
+declare -A FORMAT_SUP
+FORMAT_SUP["worst"]="worst"
+FORMAT_SUP["360p"]="best[height=360]"
+FORMAT_SUP["480p"]="best[height=480]"
+FORMAT_SUP["720p"]="best[height=720]"
+FORMAT_SUP["1080p"]="best[height=1080]"
+FORMAT_SUP["360"]="best[height=360]"
+FORMAT_SUP["480"]="best[height=480]"
+FORMAT_SUP["720"]="best[height=720]"
+FORMAT_SUP["1080"]="best[height=1080]"
+FORMAT_SUP["best"]="best"
 declare -A SUB_LANG
 SUB_LANG["enUS","tag"]="eng"
 SUB_LANG["enUS","cty"]="English (US)"
@@ -158,7 +168,7 @@ do
 				OUTPUT="${2}"
 			else
 				OUTPUT="${DEST_DIR}/${2}"
-			fi	
+			fi
 			if [ -z "$(echo ${OUTPUT##*/} | grep "\.")" ] # Output given is a directory.
 			then
 				DEST_DIR="$(readlink -f "${OUTPUT}")"
@@ -188,7 +198,13 @@ do
 			CRC32="YES"
 		;;
 		-f|--format)
-			FORMAT="${2}"
+			if [ -z "${FORMAT_SUP["${2,,}"]}" ]
+			then
+				echo "Error. Format specification for ${2} not found."
+			        echo "Edit this script and add it in FORMAT_SUP array."
+			        exit -1
+			fi
+			FORMAT="${FORMAT_SUP["${2,,}"]}"
 			shift
 		;;
 		-s|--sub_default)
@@ -322,7 +338,7 @@ do
 		unset def
 		if [ "${SUB_DEFAULT}" = "${sl}" ]
 		then
-			def="--default-track 0:yes"
+			def="--default-track 0:yes --forced-track 0:yes"
 		fi
 		echo "Found ${SUB_LANG["${sl}","cty"]} subtitle!... Ready."
 		SUB_MKV+=("--language \"0:${SUB_LANG["${sl}","tag"]}\" --track-name \"0:${SUB_LANG["${sl}","cty"]}\" ${def} '(' \"${each}\" ')'")

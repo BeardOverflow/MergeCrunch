@@ -58,30 +58,37 @@ Same top, but now CRC32 will be calculated and stored in the filename.
 ```sh
 ./mergecrunch.sh -i URL_CRUNCH_HERE -x -f 720p
 ```
-Same top, but now resolution will be 1280x720. Be careful with this argument. Check before your available resolution with:
-```sh
- youtube-dl -F URL_CRUNCH_HERE
-```
+Same top, but now resolution will be 1280x720. Be careful with this argument, some resolution are availabled for premium users only.
 
-**Prefered language (argument -s):**
+Format | Description
+------ | -----------
+worst  | The worst resolution available (generally 360p or 480p)
+360p   | 480x360 or 640x360
+480p   | 640x360 or 848x480
+720p   | 1280x720
+1080p  | 1920x1080
+best   | The best resolution available (generally 480p or 1080p)
 
-Using a prefered language, you set a default subtitle track in your mkv. Also, title description and default output filename are set according to language.
+**Preferred language (argument -s):**
+
+Using a preferred language, you set a default subtitle track in your mkv. Also, title description and default output filename are set according to this language.
 
 ```sh
 ./mergecrunch.sh -i URL_CRUNCH_HERE -x -f 720p -s esES
 ```
 Same top, but now I set spanish subtitle track as prefered.  Also, default output filename will be in spanish.
 
-Argument -s only admits this values:
-- "enUS" forces English.
-- "esES" forces Spanish Castillian.
-- "esLA" forces Spanish Mejicano.
-- "frFR" forces Français.
-- "itIT" forces Italiano.
-- "ptBR" forces Português.
-- "deDE" forces Deutsch.
-- "arME" forces العربية
-- "ruRU" forces Русский
+Language | Description
+-------- | -----------
+enUS     | Forces American English
+esES     | Forces European Spanish
+esLA     | Forces American Spanish
+frFR     | Forces Français
+itIT     | Forces Italiano
+ptBR     | Forces Português
+deDE     | Forces Deutsch
+arME     | Forces العربية
+ruRU     | Forces Русский
 
 **Output file name (argument -o):**
 ```sh
@@ -136,3 +143,4 @@ Example #3. Select IDs items from 12 to 20 and also 2, 5, 23 to 30.
 
 ## LICENSE
 GNU General Public License v2.0
+

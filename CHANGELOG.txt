@@ -1,4 +1,7 @@
 2018-01-02
+        -- Rev. 16 --
+                [Improvement] Smart selection for resolution with simple tags (worst, 360p, ..., 1080p, best).
+                [Improvement] Default subtitle is forced subtitle too (because some players ignore default mark).
         -- Rev. 15 --
                 [New] Support for cookies file.
         -- Rev. 14 --
