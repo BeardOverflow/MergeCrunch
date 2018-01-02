@@ -4,40 +4,43 @@
 
 ## Description
 
-MergeCrunch is a small bash script that combine youtube-dl and mkvmerge for get anime.
+MergeCrunch is a small bash script (/ironic off) that combines youtube-dl and mkvmerge for getting anime.
 
-The main feature is to generate a mkv file with all availables soft-subtitles and fonts attachment of downloaded files from **Crunchyroll** streaming.
+The main feature is to generate a pretty mkv file with all availables soft-subtitles from **Crunchyroll** site and after required fonts are attached from fontconfig.
 
 Now support to premium users!!
 
 Now support to playlist URLs and playlist selection!!
 
-==Tested in Ubuntu 14.04==
+Now support to cookies file!!
+
+==Tested in Ubuntu 16.04 Xenial and Debian 9 Stretch==
 
 ## Dependencies
 
-You must have installed youtube-dl and mkvmerge, as minimum.
+You must have installed youtube-dl, fontconfig and mkvmerge, as minimum.
 
-Rhash is recommended for can calculate CRC32 hash sum.
+Rhash is recommended for calculating CRC32 hash sum.
 
-For get this dependencies, execute the classic sudo apt-get install.
+For getting this dependencies, execute the classic sudo apt-get install.
 
-Note 1. For youtube-dl, I recommend to use [nilarimogard's ppa](https://launchpad.net/~nilarimogard/+archive/ubuntu/webupd8).
+Note 1. For youtube-dl, I would recommend to use [nilarimogard's ppa](https://launchpad.net/~nilarimogard/+archive/ubuntu/webupd8).
 
-Note 2. For mkvtoolnix, I recommend to use [custom Bunkus' repository](https://www.bunkus.org/videotools/mkvtoolnix/downloads.html#ubuntu). 
+Note 2. For mkvtoolnix, I would recommend to use [custom Bunkus' repository](https://www.bunkus.org/videotools/mkvtoolnix/downloads.html#ubuntu). 
 
 ```sh
 sudo apt-get install youtube-dl
+sudo apt-get install fontconfig
 sudo apt-get install mkvtoolnix
 sudo apt-get install rhash
 ```
 
-For solve fonts text dependencies, create a folder in your home dir called ~/.fonts and put here any font text missing.
-When you run this script, mkvmerge needs fonts text installed previous in your system for able to add it as attachment.
+For solving fonts text dependencies, create a folder in your home dir called ~/.fonts and put here any font text missing.
+When you run this script, mkvmerge needs fonts text installed previous in your system for adding it as attachment.
 
 ## Usage
 
-For this section, I ilustrate how to use it with examples:
+For this section, I will ilustrate how to use it with examples:
 
 **Basic example (argument -i):**
 ```sh
@@ -45,15 +48,15 @@ For this section, I ilustrate how to use it with examples:
 ```
 Episode will be downloaded with max resolution in the current directory
 
-**CRC32 example (argument -c):**
+**CRC32 example (argument -x):**
 ```sh
-./mergecrunch.sh -i URL_CRUNCH_HERE -c
+./mergecrunch.sh -i URL_CRUNCH_HERE -x
 ```
 Same top, but now CRC32 will be calculated and stored in the filename.
 
 **Format example (argument -f):**
 ```sh
-./mergecrunch.sh -i URL_CRUNCH_HERE -c -f 720p
+./mergecrunch.sh -i URL_CRUNCH_HERE -x -f 720p
 ```
 Same top, but now resolution will be 1280x720. Be careful with this argument. Check before your available resolution with:
 ```sh
@@ -65,37 +68,42 @@ Same top, but now resolution will be 1280x720. Be careful with this argument. Ch
 Using a prefered language, you set a default subtitle track in your mkv. Also, title description and default output filename are set according to language.
 
 ```sh
-./mergecrunch.sh -i URL_CRUNCH_HERE -c -f 720p -s esES
+./mergecrunch.sh -i URL_CRUNCH_HERE -x -f 720p -s esES
 ```
 Same top, but now I set spanish subtitle track as prefered.  Also, default output filename will be in spanish.
 
-Argument -s only admit this values:
-- "enUS" for  English.
-- "esES" for Spanish Castillian.
-- "esLA" for Spanish Mejicano.
-- "frFR" for force Français.
-- "itIT" for force Italiano.
-- "ptBR" for force Português.
-- "deDE" for force Deutsch.
-- "arME" for force العربية
-
+Argument -s only admits this values:
+- "enUS" forces English.
+- "esES" forces Spanish Castillian.
+- "esLA" forces Spanish Mejicano.
+- "frFR" forces Français.
+- "itIT" forces Italiano.
+- "ptBR" forces Português.
+- "deDE" forces Deutsch.
+- "arME" forces العربية
+- "ruRU" forces Русский
 
 **Output file name (argument -o):**
 ```sh
-./mergecrunch.sh -i URL_CRUNCH_HERE -c -f 720p -s esES -o 'Sket Dance 01.mkv'
+./mergecrunch.sh -i URL_CRUNCH_HERE -x -f 720p -s esES -o 'Sket Dance 01.mkv'
 ```
 Same top, but now output file will renamed as "Sket Dance 01 [CRC32_HERE].mkv"
 
 
-**Premium account (argument -u and -p):**
+**Premium account (argument -u and -p OR argument -c):**
 ```sh
-./mergecrunch.sh -i URL_CRUNCH_HERE -c -f 720p -s esES -o 'Sket Dance 01.mkv' -u BeardOverflow
+./mergecrunch.sh -i URL_CRUNCH_HERE -x -f 720p -s esES -o 'Sket Dance 01.mkv' -u BeardOverflow
 ```
 Same top, but I am logging in my premium account. The console will prompt for username's password.
 
 However, you may specific your password by command line.
 ```sh
-./mergecrunch.sh -i URL_CRUNCH_HERE -c -f 720p -s esES -o 'Sket Dance 01.mkv' -u BeardOverflow -p mysecretpassword
+./mergecrunch.sh -i URL_CRUNCH_HERE -x -f 720p -s esES -o 'Sket Dance 01.mkv' -u BeardOverflow -p mysecretpassword
+```
+
+Sometimes, the login access could fail using argument -u (because youtube-dl is outdated). In this case, you could use a cookie file. In order to get your cookie file, I would recommend to use an extension navigator such as [cookies.txt from Chrome Store](https://chrome.google.com/webstore/detail/cookiestxt/njabckikapfpffapmjgojcnbfjonfjfg).
+```sh
+./mergecrunch.sh -i URL_CRUNCH_HERE -x -f 720p -s esES -o 'Sket Dance 01.mkv' -c cookies.txt
 ```
 
 **Playlist selection (append # character in input URL):**
@@ -122,9 +130,9 @@ Example #3. Select IDs items from 12 to 20 and also 2, 5, 23 to 30.
 
 
 ## FEEDBACK, BUGS OR CONTRIBUTION
-- If you need help, I will be glad to help.
+- If you need some help, I will be glad to help you.
 - Report errors is great! Do it, please.
-- If you want help with something, I will hear you :)
+- If you want help me with something, you will prepare a pull request :)
 
 ## LICENSE
 GNU General Public License v2.0

@@ -1,52 +1,56 @@
 #!/bin/bash
 
 # Title:       MergeCrunch
-# Description: Download from Crunchyroll and generate a mkv file with video, subtitles and fonts merged.
+# Description: Download from Crunchyroll and generate a pretty mkv file with all video, subtitles and fonts merged.
 # Author:      José Ángel Pastrana Padilla
 # Email:       japp0005@red.ujaen.es
 # Last update: 2018-01-02
-# Revision:    14
+# Revision:    15
 
 # DEPENDENCIES:
 
-# - Enough fonts installed in your system (if any missing, put inside in ~/.fonts folder)!
+# - fontconfig (and enough fonts installed in your system. If any font is missing, put it inside your fonts folder ~/.fonts).
 # - youtube-dl
 # - mkvmerge
-# - rhash (recommend, but it has not).
+# - rhash (recommend, but it is not required).
 
 # DEFAULT PARAMETERS.
 
-# Argument for specific a premium username Crunchyroll account.
+# This argument sets a premium username Crunchyroll account.
 # By command line, it is "-u username" or "--username username"
 USERNAME="" # Default: "" (Means guest session).
 
-# Argument for specific a password for your username Crunchyroll account.
+# This argument sets a password for your username Crunchyroll account.
 # By command line, it is "-p password" or "--password password"
 PASSWORD="" # Default: "" (Means guest session if username is not specific).
 
-# Argument for calculate CRC32 sum after finish and rename file name.
-# By command line, it can be actived by "-c" or "--crc32"
+# This argument sets where cookies file is stored.
+# By command line, it is "-c cookies.txt" or "--cookies cookies.txt"
+COOKIES="" # Default: "" (Means not using previous cookies).
+
+# This argument computes a CRC32 sum to downloaded file and renames it in order to append the hash.
+# By command line, it can be actived by "-x" or "--crc32"
 CRC32="" # Default: "" (Means disabled). Change to "YES" for always active
 
-# Argument for set video resolution.
+# This argument sets video resolution.
 # By command line, it is "-f value" or "--format value".
 # Default: "" (Means best resolution). 
 # Change to other value as "480p", "720p", "1080p".
 # If there are any problem, try "480p-0", "720p-0", "1080p-1", "480p-1", "720p-1", "1080p-0", "1080p-1".
 FORMAT=""
 
-# Argument for set default track subtitle if your player doesn't set this field.
+# This argument sets default track subtitle if your player doesn't set this field.
 # By command line, use "-s value" or "--sub_default value"
 # Default: "" (Means english).
-# Value to "enUS" for force English.
-# Value to "esES" for force Spanish Castillian.
-# Value to "esLA" for force Spanish Mejicano.
-# Value to "frFR" for force Français.
-# Value to "itIT" for force Italiano.
-# Value to "ptBR" for force Português.
-# Value to "deDE" for force Deutsch.
-# Value to "arME" for force العربية
-# Value to "ruRU" for force Русский
+# Value to "enUS" forces English.
+# Value to "esES" forces Spanish Castillian.
+# Value to "esLA" forces Spanish Mejicano.
+# Value to "frFR" forces Français.
+# Value to "itIT" forces Italiano.
+# Value to "ptBR" forces Português.
+# Value to "deDE" forces Deutsch.
+# Value to "arME" forces العربية.
+# Value to "ruRU" forces Русский.
 SUB_DEFAULT="" 
 
 
@@ -118,6 +122,13 @@ then
 	exit -1
 fi
 
+if [ -z "$(which fc-list)" ]
+then
+	echo "Please, first install fontconfig package."
+	echo "Run 'sudo apt-get install fontconfig' and try again."
+	exit -1
+fi
+
 if [ -z "$(which youtube-dl)" ]
 then
 	echo "Please, first install youtube-dl package."
@@ -163,10 +174,14 @@ do
 			PASSWORD="${2}"
 			shift
 		;;
-		-c|--crc32)
+		-c|--cookies)
+			COOKIES="${2}"
+			shift
+		;;
+		-x|--crc32)
 			if [ -z "$(which rhash)" ]
 			then
-				echo "For use -c argument, it needs rhash installed."
+				echo "Using ${1} argument, it needs rhash installed."
 				echo "Run 'sudo apt-get install rhash' and try again."
 				exit -1
 			fi
@@ -200,6 +215,10 @@ fi
 if [ -n "${PASSWORD}" ]
 then
 	PASSWORD="-p ${PASSWORD}"
+fi
+if [ -n "${COOKIES}" ]
+then
+	COOKIES="--cookies ${COOKIES}"
 fi
 if [ -n "${FORMAT}" ]
 then
@@ -281,7 +300,7 @@ do
 	greencon "STEP 0. QUEUE INPUT URL #${c}."
 	echo "${INPUT}"
 	greencon "STEP 1. GET CRUNCHYROLL STREAMING DOWNLOAD."
-	youtube-dl --no-warnings --no-continue --no-part --all-subs ${USERNAME} ${PASSWORD} ${FORMAT} ${HEADER} ${INPUT}
+	youtube-dl --no-warnings --no-continue --no-part --all-subs ${USERNAME} ${PASSWORD} ${COOKIES} ${FORMAT} ${HEADER} ${INPUT}
 	if [ ${?} -ne 0 ]
 	then
 		handlesignal "Failed to get streaming! Exitting..."

@@ -1,4 +1,6 @@
 2018-01-02
+        -- Rev. 15 --
+                [New] Support for cookies file.
         -- Rev. 14 --
                 [Bug] Web scraping was failing for playlist url.
                 [Improvement] Add pattern for ruRU subtitle language.
