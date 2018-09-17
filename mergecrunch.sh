@@ -4,8 +4,8 @@
 # Description: Download from Crunchyroll and generate a pretty mkv file with all video, subtitles and fonts merged.
 # Author:      José Ángel Pastrana Padilla
 # Email:       japp0005@red.ujaen.es
-# Last update: 2018-01-02
-# Revision:    16
+# Last update: 2018-09-17
+# Revision:    17
 
 # DEPENDENCIES:
 
@@ -50,6 +50,7 @@ FORMAT=""
 # Value to "deDE" forces Deutsch.
 # Value to "arME" forces العربية.
 # Value to "ruRU" forces Русский.
+# Value to "jaJP" forces 日本語.
 SUB_DEFAULT="" 
 
 
@@ -69,7 +70,7 @@ FORMAT_SUP["1080"]="best[height=1080]"
 FORMAT_SUP["best"]="best"
 declare -A SUB_LANG
 SUB_LANG["enUS","tag"]="eng"
-SUB_LANG["enUS","cty"]="English (US)"
+SUB_LANG["enUS","cty"]="English (USA)"
 SUB_LANG["esES","tag"]="spa"
 SUB_LANG["esES","cty"]="Español (España)"
 SUB_LANG["esLA","tag"]="spa"
@@ -88,6 +89,8 @@ SUB_LANG["trTR","tag"]="tur"
 SUB_LANG["trTR","cty"]="Türkçe (Türkiye)"
 SUB_LANG["ruRU","tag"]="rus"
 SUB_LANG["ruRU","cty"]="Русский (Россия)"
+SUB_LANG["jaJP","tag"]="jap"
+SUB_LANG["jaJP","cty"]="日本語 (日本)"
 
 
 # A SIMPLES FUNCTIONS FOR COLOURED OUTPUT TEXT
@@ -331,45 +334,55 @@ do
 
 	# Prepare subtitles downloaded for will merge to output file
 	greencon "STEP 2. CHECKING AVAILABLE SUBTITLES."
-	for each in *.ass
-	do
-		sl=${each%.ass}
-		sl=${sl##*.}
-		unset def
-		if [ "${SUB_DEFAULT}" = "${sl}" ]
-		then
-			def="--default-track 0:yes --forced-track 0:yes"
-		fi
-		echo "Found ${SUB_LANG["${sl}","cty"]} subtitle!... Ready."
-		SUB_MKV+=("--language \"0:${SUB_LANG["${sl}","tag"]}\" --track-name \"0:${SUB_LANG["${sl}","cty"]}\" ${def} '(' \"${each}\" ')'")
-	done
+	if ls *.ass >/dev/null 2>/dev/null
+	then
+		for each in *.ass
+		do
+			sl=${each%.ass}
+			sl=${sl##*.}
+			unset def
+			if [ "${SUB_DEFAULT}" = "${sl}" ]
+			then
+				def="--default-track 0:yes --forced-track 0:yes"
+			fi
+			echo "Found ${SUB_LANG["${sl}","cty"]} subtitle!... Ready."
+			SUB_MKV+=("--language \"0:${SUB_LANG["${sl}","tag"]}\" --track-name \"0:${SUB_LANG["${sl}","cty"]}\" ${def} '(' \"${each}\" ')'")
+		done
+	else
+		yellowcon "Not found any subtitle track."
+	fi
 
 	# Searching for fonts attachments
 	greencon "STEP 3. CHECKING AVAILABLES ATTACHMENT FONTS TEXT."
-	for each in *.ass
-	do
+	if ls *.ass >/dev/null 2>/dev/null
+	then
+		for each in *.ass
+		do
+			while read -r line
+			do
+			        fonts+=("${line}")
+			done <<< "$(cat "${each}" | grep "^Style:" | cut -d"," -f2 | sort -u)"
+		done
+
 		while read -r line
 		do
-		        fonts+=("${line}")
-		done <<< "$(cat "${each}" | grep "^Style:" | cut -d"," -f2 | sort -u)"
-	done
-
-	while read -r line
-	do
-		queryfc="$(fc-match "${line}")"
-		foundName="$(echo ${queryfc} | cut -d'"' -f2)"
-		foundStyle="$(echo ${queryfc} | cut -d'"' -f4)"
-		if [ "${foundName,,}" = "${line,,}" ] || [ "$(echo "${foundName,,} ${foundStyle,,}" | xargs)" = "$(echo "${line,,}" | xargs)" ]
-		then
-		        echo "Found ${line} font!... Ready."
-		else
-			redcon "WARNING: REQUEST FONT <<< ${line} >>> IS NOT INSTALLED IN YOUR SYSTEM. PLEASE, INSTALL IT AND TRY AGAIN. WHILE I WILL BE USE <<< ${foundName} >>>."
-		fi
-		FONT_MKV+=("--attach-file \"$(fc-match -v "${line}" | grep "file:" | cut -d'"' -f2)\"")
-	done <<< "$(printf "%s\n" "${fonts[@]}" | sort -u)"
+			queryfc="$(fc-match "${line}")"
+			foundName="$(echo ${queryfc} | cut -d'"' -f2)"
+			foundStyle="$(echo ${queryfc} | cut -d'"' -f4)"
+			if [ "${foundName,,}" = "${line,,}" ] || [ "$(echo "${foundName,,} ${foundStyle,,}" | xargs)" = "$(echo "${line,,}" | xargs)" ]
+			then
+			        echo "Found ${line} font!... Ready."
+			else
+				redcon "WARNING: REQUEST FONT <<< ${line} >>> IS NOT INSTALLED IN YOUR SYSTEM. PLEASE, INSTALL IT AND TRY AGAIN. WHILE I WILL BE USE <<< ${foundName} >>>."
+			fi
+			FONT_MKV+=("--attach-file \"$(fc-match -v "${line}" | grep "file:" | cut -d'"' -f2)\"")
+		done <<< "$(printf "%s\n" "${fonts[@]}" | sort -u)"
+	else
+		yellowcon "Not required any attachment."
+	fi
 
 	# Launch mkvmerge
-	greencon "STEP 4. TIME TO MERGING ALL TO MKV FILE."
+	greencon "STEP 4. TIME FOR MERGING ALL TO MKV FILE."
 	MKVCOMMAND="mkvmerge --output \"${OUTPUT}\" --language 0:jpn --track-name \"0:${DL_NAME%-*}\" --language 1:jpn --track-name \"1:${DL_NAME%-*}\" '(' \"${DL_NAME}\" ')' ${SUB_MKV[*]} ${FONT_MKV[*]} --title \"${DL_NAME%-*}\" -q"
 	eval ${MKVCOMMAND}
 	case "${?}" in

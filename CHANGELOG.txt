@@ -1,3 +1,8 @@
+2018-09-17
+	-- Rev. 17 --
+		[Bug] Streaming without subtitles cannot build to mkv.
+		[Improvement] Add pattern for jaJP track language.
+
 2018-01-02
         -- Rev. 16 --
                 [Improvement] Smart selection for resolution with simple tags (worst, 360p, ..., 1080p, best).

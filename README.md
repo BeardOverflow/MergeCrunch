@@ -89,6 +89,8 @@ ptBR     | Forces Português
 deDE     | Forces Deutsch
 arME     | Forces العربية
 ruRU     | Forces Русский
+jaJP     | Forces 日本語
+
 
 **Output file name (argument -o):**
 ```sh
