@@ -4,8 +4,8 @@
 # Description: Download from Crunchyroll and generate a pretty mkv file with all video, subtitles and fonts merged.
 # Author:      José Ángel Pastrana Padilla
 # Email:       japp0005@red.ujaen.es
-# Last update: 2018-09-17
-# Revision:    17
+# Last update: 2018-09-25
+# Revision:    18
 
 # DEPENDENCIES:
 
@@ -49,10 +49,26 @@ FORMAT=""
 # Value to "ptBR" forces Português.
 # Value to "deDE" forces Deutsch.
 # Value to "arME" forces العربية.
+# Value to "trTR" forces Türkçe
 # Value to "ruRU" forces Русский.
 # Value to "jaJP" forces 日本語.
-SUB_DEFAULT="" 
+SUB_DEFAULT=""
 
+# This argument spoofs X-Forwarded-For using a fake IP
+# By command line, it is "-g US" or "--geo enUS"
+# Default: "" (Means your actual IP country)
+# Value to "enUS" forces USA.
+# Value to "esES" forces España.
+# Value to "esLA" forces México.
+# Value to "frFR" forces France.
+# Value to "itIT" forces Italia.
+# Value to "ptBR" forces Brasil.
+# Value to "deDE" forces Deutschland.
+# Value to "arME" forces العربية.
+# Value to "trTR" forces Türkiye
+# Value to "ruRU" forces Россия.
+# Value to "jaJP" forces 日本.
+GEO_COUNTRY="" # Default: "" (Means your actual IP country)
 
 # NEED THIS VARIABLES...
 TMP_DIR="/tmp/${$}"
@@ -71,26 +87,37 @@ FORMAT_SUP["best"]="best"
 declare -A SUB_LANG
 SUB_LANG["enUS","tag"]="eng"
 SUB_LANG["enUS","cty"]="English (USA)"
+SUB_LANG["enUS","geo"]="US"
 SUB_LANG["esES","tag"]="spa"
 SUB_LANG["esES","cty"]="Español (España)"
+SUB_LANG["esES","geo"]="ES"
 SUB_LANG["esLA","tag"]="spa"
 SUB_LANG["esLA","cty"]="Español (México)"
+SUB_LANG["esLA","geo"]="LA"
 SUB_LANG["frFR","tag"]="fre"
 SUB_LANG["frFR","cty"]="Français (France)"
+SUB_LANG["frFR","geo"]="FR"
 SUB_LANG["itIT","tag"]="ita"
 SUB_LANG["itIT","cty"]="Italiano (Italia)"
+SUB_LANG["itIT","geo"]="IT"
 SUB_LANG["ptBR","tag"]="por"
 SUB_LANG["ptBR","cty"]="Português (Brasil)"
+SUB_LANG["ptBR","geo"]="BR"
 SUB_LANG["deDE","tag"]="ger"
 SUB_LANG["deDE","cty"]="Deutsch (Deutschland)"
+SUB_LANG["deDE","geo"]="DE"
 SUB_LANG["arME","tag"]="ara"
 SUB_LANG["arME","cty"]="العربية"
+SUB_LANG["arME","geo"]="ME"
 SUB_LANG["trTR","tag"]="tur"
 SUB_LANG["trTR","cty"]="Türkçe (Türkiye)"
+SUB_LANG["trTR","geo"]="TR"
 SUB_LANG["ruRU","tag"]="rus"
 SUB_LANG["ruRU","cty"]="Русский (Россия)"
+SUB_LANG["ruRU","geo"]="RU"
 SUB_LANG["jaJP","tag"]="jap"
 SUB_LANG["jaJP","cty"]="日本語 (日本)"
+SUB_LANG["jaJP","geo"]="JP"
 
 
 # A SIMPLES FUNCTIONS FOR COLOURED OUTPUT TEXT
@@ -220,6 +247,16 @@ do
 			SUB_DEFAULT="${2}"
 			shift
 		;;
+		-g|--geo)
+			if [ -z "${SUB_LANG["${2}","geo"]}" ]
+			then
+				echo "Error. Geolocation specification for ${2} not found."
+				echo "Edit this script and add it in SUB_LANG array."
+				exit -1
+			fi
+			GEO_COUNTRY="${2}"
+			shift
+		;;
 		*)
 			echo "Error. Unexpected argument: ${1}"
 			exit -1
@@ -237,6 +274,7 @@ then
 fi
 if [ -n "${COOKIES}" ]
 then
+	WGET_COOKIES="--load-cookies ${COOKIES}"
 	COOKIES="--cookies ${COOKIES}"
 fi
 if [ -n "${FORMAT}" ]
@@ -247,12 +285,23 @@ if [ -n "${SUB_DEFAULT}" ]
 then
 	HEADER="--add-header Accept-Language:${SUB_DEFAULT}"
 fi
+if [ -n "${GEO_COUNTRY}" ]
+then
+	GEO_COUNTRY="--geo-bypass-country ${SUB_LANG["${GEO_COUNTRY}","geo"]}"
+fi
 
 
 # MAIN...
 # Check playlist...
 TMP_FILE="/tmp/${$}-check"
-wget "${INPUT}" -qO "${TMP_FILE}"
+if [ -n "${WGET_COOKIES}" ]
+then
+	FAKE_IP="$(youtube-dl -s -v ${GEO_COUNTRY} "${INPUT}" 2>&1 | grep -m1 'fake IP' | xargs | cut -d' ' -f5)"
+	yellowcon "Using fake ip: $FAKE_IP"
+	wget "${INPUT}" ${WGET_COOKIES} --header "X-Forwarded-For: ${FAKE_IP}" -qO "${TMP_FILE}"
+else
+	wget "${INPUT}" ${WGET_COOKIES} -qO "${TMP_FILE}"
+fi
 if [ -z "$(cat "${TMP_FILE}" | grep '"type":"error"')" ] # Check URL errors
 then
 if [ -z "$(cat "${TMP_FILE}" | grep 'link rel="index"')" ] # Input URL is a playlist
@@ -295,7 +344,7 @@ else
 	echo "${INPUT} ready!"
 fi
 else
-	youtube-dl -s ${USERNAME} ${PASSWORD} ${FORMAT} ${HEADER} ${INPUT}
+	youtube-dl -s ${USERNAME} ${PASSWORD} ${FORMAT} ${HEADER} ${GEO_COUNTRY} ${INPUT}
 	handlesignal "Exitting due to an error in input URL..."
 fi
 rm -r "${TMP_FILE}"
@@ -319,7 +368,7 @@ do
 	greencon "STEP 0. QUEUE INPUT URL #${c}."
 	echo "${INPUT}"
 	greencon "STEP 1. GET CRUNCHYROLL STREAMING DOWNLOAD."
-	youtube-dl --no-warnings --no-continue --no-part --all-subs ${USERNAME} ${PASSWORD} ${COOKIES} ${FORMAT} ${HEADER} ${INPUT}
+	youtube-dl --no-warnings --no-continue --no-part --all-subs ${USERNAME} ${PASSWORD} ${COOKIES} ${FORMAT} ${HEADER} ${GEO_COUNTRY} ${INPUT}
 	if [ ${?} -ne 0 ]
 	then
 		handlesignal "Failed to get streaming! Exitting..."
@@ -384,7 +433,7 @@ do
 	# Launch mkvmerge
 	greencon "STEP 4. TIME FOR MERGING ALL TO MKV FILE."
 	MKVCOMMAND="mkvmerge --output \"${OUTPUT}\" --language 0:jpn --track-name \"0:${DL_NAME%-*}\" --language 1:jpn --track-name \"1:${DL_NAME%-*}\" '(' \"${DL_NAME}\" ')' ${SUB_MKV[*]} ${FONT_MKV[*]} --title \"${DL_NAME%-*}\" -q"
-	eval ${MKVCOMMAND}
+	eval ${MKVCOMMAND//\`/\\\`}
 	case "${?}" in
 		0) echo "Merge completed!";;
 		1) yellowcon "Merge completed with WARNINGS!";;

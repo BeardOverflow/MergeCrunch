@@ -14,6 +14,8 @@ Now support to playlist URLs and playlist selection!!
 
 Now support to cookies file!!
 
+Now support to spoof your location!!
+
 ==Tested in Ubuntu 16.04 Xenial and Debian 9 Stretch==
 
 ## Dependencies
@@ -26,7 +28,7 @@ For getting this dependencies, execute the classic sudo apt-get install.
 
 Note 1. For youtube-dl, I would recommend to use [nilarimogard's ppa](https://launchpad.net/~nilarimogard/+archive/ubuntu/webupd8).
 
-Note 2. For mkvtoolnix, I would recommend to use [custom Bunkus' repository](https://www.bunkus.org/videotools/mkvtoolnix/downloads.html#ubuntu). 
+Note 2. For mkvtoolnix, I would recommend to use [custom Bunkus' repository](https://www.bunkus.org/videotools/mkvtoolnix/downloads.html#ubuntu).
 
 ```sh
 sudo apt-get install youtube-dl
@@ -92,6 +94,14 @@ ruRU     | Forces Русский
 jaJP     | Forces 日本語
 
 
+**Spoof location (argument -g):**
+
+Similar to choose your preferred language, you can spoof your location in order to download videos from foreign locations. The following example shows a spoof location to USA and preferred language to American Spanish.
+
+```sh
+./mergecrunch.sh -i URL_CRUNCH_HERE -x -f 720p -s esLA -g enUS
+```
+
 **Output file name (argument -o):**
 ```sh
 ./mergecrunch.sh -i URL_CRUNCH_HERE -x -f 720p -s esES -o 'Sket Dance 01.mkv'
@@ -145,4 +155,6 @@ Example #3. Select IDs items from 12 to 20 and also 2, 5, 23 to 30.
 
 ## LICENSE
 GNU General Public License v2.0
+
+
 

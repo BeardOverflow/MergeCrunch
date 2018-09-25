@@ -1,3 +1,8 @@
+2018-09-25
+	-- Rev. 18 --
+		[New] Support to spoof your location using a fake ip.
+		[Bug] Some titles with rare characters as ` breaks mkvmerge.
+
 2018-09-17
 	-- Rev. 17 --
 		[Bug] Streaming without subtitles cannot build to mkv.
