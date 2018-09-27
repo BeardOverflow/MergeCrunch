@@ -4,8 +4,8 @@
 # Description: Download from Crunchyroll and generate a pretty mkv file with all video, subtitles and fonts merged.
 # Author:      José Ángel Pastrana Padilla
 # Email:       japp0005@red.ujaen.es
-# Last update: 2018-09-25
-# Revision:    18
+# Last update: 2018-09-27
+# Revision:    19
 
 # DEPENDENCIES:
 
