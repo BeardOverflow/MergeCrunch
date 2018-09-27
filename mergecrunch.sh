@@ -288,20 +288,16 @@ fi
 if [ -n "${GEO_COUNTRY}" ]
 then
 	GEO_COUNTRY="--geo-bypass-country ${SUB_LANG["${GEO_COUNTRY}","geo"]}"
+	FAKE_IP="$(youtube-dl -s -v ${GEO_COUNTRY} "${INPUT}" 2>&1 | grep -m1 'fake IP' | xargs | cut -d' ' -f5)"
+	WGET_GEO_COUNTRY="--header X-Forwarded-For:${FAKE_IP}"
+	yellowcon "Using fake ip: $FAKE_IP"
 fi
 
 
 # MAIN...
 # Check playlist...
 TMP_FILE="/tmp/${$}-check"
-if [ -n "${WGET_COOKIES}" ]
-then
-	FAKE_IP="$(youtube-dl -s -v ${GEO_COUNTRY} "${INPUT}" 2>&1 | grep -m1 'fake IP' | xargs | cut -d' ' -f5)"
-	yellowcon "Using fake ip: $FAKE_IP"
-	wget "${INPUT}" ${WGET_COOKIES} --header "X-Forwarded-For: ${FAKE_IP}" -qO "${TMP_FILE}"
-else
-	wget "${INPUT}" ${WGET_COOKIES} -qO "${TMP_FILE}"
-fi
+wget "${INPUT}" ${WGET_COOKIES} ${WGET_GEO_COUNTRY} -qO "${TMP_FILE}"
 if [ -z "$(cat "${TMP_FILE}" | grep '"type":"error"')" ] # Check URL errors
 then
 if [ -z "$(cat "${TMP_FILE}" | grep 'link rel="index"')" ] # Input URL is a playlist
@@ -433,7 +429,7 @@ do
 	# Launch mkvmerge
 	greencon "STEP 4. TIME FOR MERGING ALL TO MKV FILE."
 	MKVCOMMAND="mkvmerge --output \"${OUTPUT}\" --language 0:jpn --track-name \"0:${DL_NAME%-*}\" --language 1:jpn --track-name \"1:${DL_NAME%-*}\" '(' \"${DL_NAME}\" ')' ${SUB_MKV[*]} ${FONT_MKV[*]} --title \"${DL_NAME%-*}\" -q"
-	eval ${MKVCOMMAND//\`/\\\`}
+	eval "${MKVCOMMAND//\`/\\\`}"
 	case "${?}" in
 		0) echo "Merge completed!";;
 		1) yellowcon "Merge completed with WARNINGS!";;

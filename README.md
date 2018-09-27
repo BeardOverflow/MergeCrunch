@@ -78,7 +78,7 @@ Using a preferred language, you set a default subtitle track in your mkv. Also, 
 ```sh
 ./mergecrunch.sh -i URL_CRUNCH_HERE -x -f 720p -s esES
 ```
-Same top, but now I set spanish subtitle track as prefered.  Also, default output filename will be in spanish.
+Same top, but now I set spanish subtitle track as preferred.
 
 Language | Description
 -------- | -----------
@@ -96,10 +96,12 @@ jaJP     | Forces 日本語
 
 **Spoof location (argument -g):**
 
-Similar to choose your preferred language, you can spoof your location in order to download videos from foreign locations. The following example shows a spoof location to USA and preferred language to American Spanish.
+Similar to choose your preferred language, you can spoof your location in order to download videos from foreign locations. The following example shows a spoof location to Russia and preferred language to American Spanish.
+
+Also, default output filename will be in russian.
 
 ```sh
-./mergecrunch.sh -i URL_CRUNCH_HERE -x -f 720p -s esLA -g enUS
+./mergecrunch.sh -i URL_CRUNCH_HERE -x -f 720p -s esLA -g ruRU
 ```
 
 **Output file name (argument -o):**
