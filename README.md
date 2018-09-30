@@ -152,8 +152,8 @@ Example #3. Select IDs items from 12 to 20 and also 2, 5, 23 to 30.
 
 ## FEEDBACK, BUGS OR CONTRIBUTION
 - If you need some help, I will be glad to help you.
-- Report errors is great! Do it, please.
-- If you want help me with something, you will prepare a pull request :)
+- Please report all errors, getting them is great.
+- If you want to help me with something please create a pull request :)
 
 ## LICENSE
 GNU General Public License v2.0
