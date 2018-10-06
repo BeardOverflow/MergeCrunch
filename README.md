@@ -87,7 +87,8 @@ esES     | Forces European Spanish
 esLA     | Forces American Spanish
 frFR     | Forces Français
 itIT     | Forces Italiano
-ptBR     | Forces Português
+ptBR     | Forces Brazilian Português
+ptPT     | Forces European Português
 deDE     | Forces Deutsch
 arME     | Forces العربية
 ruRU     | Forces Русский

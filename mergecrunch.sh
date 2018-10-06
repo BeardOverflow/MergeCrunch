@@ -4,8 +4,8 @@
 # Description: Download from Crunchyroll and generate a pretty mkv file with all video, subtitles and fonts merged.
 # Author:      José Ángel Pastrana Padilla
 # Email:       japp0005@red.ujaen.es
-# Last update: 2018-09-27
-# Revision:    19
+# Last update: 2018-10-06
+# Revision:    20
 
 # DEPENDENCIES:
 
@@ -38,15 +38,17 @@ CRC32="" # Default: "" (Means disabled). Change to "YES" for always active
 # Change to other value as "worst", "360p", "480p", "720p", "1080p", "best".
 FORMAT=""
 
+# For further references: ISO 639 and mkvmerge --list-languages
 # This argument sets default track subtitle if your player doesn't set this field.
 # By command line, use "-s value" or "--sub_default value"
 # Default: "" (Means english).
-# Value to "enUS" forces English.
-# Value to "esES" forces Spanish Castillian.
-# Value to "esLA" forces Spanish Mejicano.
+# Value to "enUS" forces American English.
+# Value to "esES" forces European Spanish.
+# Value to "esLA" forces American Spanish.
 # Value to "frFR" forces Français.
 # Value to "itIT" forces Italiano.
-# Value to "ptBR" forces Português.
+# Value to "ptBR" forces Brazilian Português.
+# Value to "ptPT" forces European Português.
 # Value to "deDE" forces Deutsch.
 # Value to "arME" forces العربية.
 # Value to "trTR" forces Türkçe
@@ -63,6 +65,7 @@ SUB_DEFAULT=""
 # Value to "frFR" forces France.
 # Value to "itIT" forces Italia.
 # Value to "ptBR" forces Brasil.
+# Value to "ptPT" forces Brasil.
 # Value to "deDE" forces Deutschland.
 # Value to "arME" forces العربية.
 # Value to "trTR" forces Türkiye
@@ -100,9 +103,12 @@ SUB_LANG["frFR","geo"]="FR"
 SUB_LANG["itIT","tag"]="ita"
 SUB_LANG["itIT","cty"]="Italiano (Italia)"
 SUB_LANG["itIT","geo"]="IT"
-SUB_LANG["ptBR","tag"]="por"
+SUB_LANG["ptBR","tag"]="por" # Should be bzs according to ISO-639-3, but mkvmerge only supports ISO-639-1/2
 SUB_LANG["ptBR","cty"]="Português (Brasil)"
 SUB_LANG["ptBR","geo"]="BR"
+SUB_LANG["ptPT","tag"]="por"
+SUB_LANG["ptPT","cty"]="Português (Portugal)"
+SUB_LANG["ptPT","geo"]="PT"
 SUB_LANG["deDE","tag"]="ger"
 SUB_LANG["deDE","cty"]="Deutsch (Deutschland)"
 SUB_LANG["deDE","geo"]="DE"
@@ -119,6 +125,9 @@ SUB_LANG["jaJP","tag"]="jap"
 SUB_LANG["jaJP","cty"]="日本語 (日本)"
 SUB_LANG["jaJP","geo"]="JP"
 
+# Turn off substitution history
+# Sad example: echo "blabla!.mkv"
+set +H
 
 # A SIMPLES FUNCTIONS FOR COLOURED OUTPUT TEXT
 function greencon {
@@ -385,6 +394,11 @@ do
 		do
 			sl=${each%.ass}
 			sl=${sl##*.}
+			if [ -z "${SUB_LANG["${sl}","tag"]}" ] || [ -z "${SUB_LANG["${sl}","cty"]}" ]
+			then
+				yellowcon "WARNING: UNABLE TO UNDERSTAND <<< ${sl} >>>. EDIT THIS SCRIPT AND ADD IT IN SUB_LANG ARRAY. WHILE I WILL IGNORE IT."
+				continue
+			fi
 			unset def
 			if [ "${SUB_DEFAULT}" = "${sl}" ]
 			then
@@ -418,7 +432,7 @@ do
 			then
 			        echo "Found ${line} font!... Ready."
 			else
-				redcon "WARNING: REQUEST FONT <<< ${line} >>> IS NOT INSTALLED IN YOUR SYSTEM. PLEASE, INSTALL IT AND TRY AGAIN. WHILE I WILL BE USE <<< ${foundName} >>>."
+				yellowcon "WARNING: REQUEST FONT <<< ${line} >>> IS NOT INSTALLED IN YOUR SYSTEM. PLEASE, INSTALL IT AND TRY AGAIN. WHILE I WILL BE USE <<< ${foundName} >>>."
 			fi
 			FONT_MKV+=("--attach-file \"$(fc-match -v "${line}" | grep "file:" | cut -d'"' -f2)\"")
 		done <<< "$(printf "%s\n" "${fonts[@]}" | sort -u)"

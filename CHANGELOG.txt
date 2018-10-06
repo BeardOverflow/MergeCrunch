@@ -1,3 +1,10 @@
+2018-10-06
+	-- Rev. 20 --
+		[Improvement] Add pattern for trTR subtitle language.
+		[Bug] Not registered subtitle patterns breaks the whole merge process. Just a warning now.
+		[Bug] Bash's substitution history feature breaks any name containing the !. string.
+		[Improvement] Any warning in console are yellow colored now (before it was mixing between red and yellow).
+
 2018-09-27
 	-- Rev. 19 --
 		[Improvement] Spoofing your location and setting the preferred language works separately.
