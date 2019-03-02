@@ -16,6 +16,8 @@ Now support to cookies file!!
 
 Now support to spoof your location!!
 
+Now support to spoof your user-agent!!
+
 ==Tested in Ubuntu 16.04 Xenial and Debian 9 Stretch==
 
 ## Dependencies
@@ -123,9 +125,14 @@ However, you may specific your password by command line.
 ./mergecrunch.sh -i URL_CRUNCH_HERE -x -f 720p -s esES -o 'Sket Dance 01.mkv' -u BeardOverflow -p mysecretpassword
 ```
 
-Sometimes, the login access could fail using argument -u (because youtube-dl is outdated). In this case, you could use a cookie file. In order to get your cookie file, I would recommend to use an extension navigator such as [cookies.txt from Chrome Store](https://chrome.google.com/webstore/detail/cookiestxt/njabckikapfpffapmjgojcnbfjonfjfg).
+Sometimes, the login access could fail using argument -u (because youtube-dl is outdated). In this case, you could use a cookie file. In order to get your cookie file, I would recommend to use an extension navigator such as [cookies.txt from Chrome Store](https://chrome.google.com/webstore/detail/cookiestxt/njabckikapfpffapmjgojcnbfjonfjfg) or [cookies.txt from Firefox Add-Ons](https://addons.mozilla.org/en-US/firefox/addon/cookies-txt/).
 ```sh
 ./mergecrunch.sh -i URL_CRUNCH_HERE -x -f 720p -s esES -o 'Sket Dance 01.mkv' -c cookies.txt
+```
+
+With the latest changes in CR, you must set your user-agent (argument --ua) and cookies file together. [Ask to google for getting it using the same browser where you downloaded the cookie file](https://www.google.com/search?q=what+is+my+user+agent)
+```
+./mergecrunch.sh -i URL_CRUNCH_HERE -x -f 720p -s esES -o 'Sket Dance 01.mkv' -c cookies.txt --ua 'Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0'
 ```
 
 **Playlist selection (append # character in input URL):**

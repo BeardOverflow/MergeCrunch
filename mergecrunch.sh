@@ -4,8 +4,8 @@
 # Description: Download from Crunchyroll and generate a pretty mkv file with all video, subtitles and fonts merged.
 # Author:      José Ángel Pastrana Padilla
 # Email:       japp0005@red.ujaen.es
-# Last update: 2018-10-06
-# Revision:    20
+# Last update: 2019-03-02
+# Revision:    21
 
 # DEPENDENCIES:
 
@@ -37,6 +37,10 @@ CRC32="" # Default: "" (Means disabled). Change to "YES" for always active
 # Default: "" (Means best resolution). 
 # Change to other value as "worst", "360p", "480p", "720p", "1080p", "best".
 FORMAT=""
+
+# This argument sets user agent.
+# By command line, it is, for example, "--ua 'Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0'"
+USER_AGENT=""
 
 # For further references: ISO 639 and mkvmerge --list-languages
 # This argument sets default track subtitle if your player doesn't set this field.
@@ -224,7 +228,8 @@ do
 			shift
 		;;
 		-c|--cookies)
-			COOKIES="${2}"
+			COOKIES="$(readlink -f "${2}")"
+			sed -i 's/^#HttpOnly_//' "${COOKIES}"
 			shift
 		;;
 		-x|--crc32)
@@ -266,6 +271,10 @@ do
 			GEO_COUNTRY="${2}"
 			shift
 		;;
+		--ua)
+			USER_AGENT="${2}"
+			shift
+		;;
 		*)
 			echo "Error. Unexpected argument: ${1}"
 			exit -1
@@ -283,8 +292,11 @@ then
 fi
 if [ -n "${COOKIES}" ]
 then
-	WGET_COOKIES="--load-cookies ${COOKIES}"
-	COOKIES="--cookies ${COOKIES}"
+	WGET_COOKIES="--load-cookies \"${COOKIES}\""
+	COOKIES="--cookies '${COOKIES}'"
+else
+	echo "Error. Crunchyroll sets new restrictions. You must specify a cookies file (for example, -c cookies.txt). More info in README.md"
+	exit -1
 fi
 if [ -n "${FORMAT}" ]
 then
@@ -298,15 +310,22 @@ if [ -n "${GEO_COUNTRY}" ]
 then
 	GEO_COUNTRY="--geo-bypass-country ${SUB_LANG["${GEO_COUNTRY}","geo"]}"
 	FAKE_IP="$(youtube-dl -s -v ${GEO_COUNTRY} "${INPUT}" 2>&1 | grep -m1 'fake IP' | xargs | cut -d' ' -f5)"
-	WGET_GEO_COUNTRY="--header X-Forwarded-For:${FAKE_IP}"
+	WGET_GEO_COUNTRY="--header \"X-Forwarded-For:${FAKE_IP}\""
 	yellowcon "Using fake ip: $FAKE_IP"
 fi
-
+if [ -n "${USER_AGENT}" ]
+then
+	WGET_USER_AGENT="--user-agent \"${USER_AGENT}\""
+	USER_AGENT="--user-agent '${USER_AGENT}'"
+else
+	echo "Error. Crunchyroll sets new restrictions. You must specify an user-agent (for example, --ua 'Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0'). More info in README.md"
+	exit -1
+fi
 
 # MAIN...
 # Check playlist...
 TMP_FILE="/tmp/${$}-check"
-wget "${INPUT}" ${WGET_COOKIES} ${WGET_GEO_COUNTRY} -qO "${TMP_FILE}"
+eval wget \"${INPUT}\" ${WGET_USER_AGENT} ${WGET_COOKIES} ${WGET_GEO_COUNTRY} -qO \"${TMP_FILE}\"
 if [ -z "$(cat "${TMP_FILE}" | grep '"type":"error"')" ] # Check URL errors
 then
 if [ -z "$(cat "${TMP_FILE}" | grep 'link rel="index"')" ] # Input URL is a playlist
@@ -329,7 +348,7 @@ then
 			fi
 		done <<< "$(echo -e "${SEGMENT//,/\\n}")"
 		greencon "---> SELECTED ID ITEMS FROM THIS PLAYLIST: ${SELECTION} <---"
-	fi	
+	fi
 	c=0
 	while read -r line
 	do
@@ -349,7 +368,7 @@ else
 	echo "${INPUT} ready!"
 fi
 else
-	youtube-dl -s ${USERNAME} ${PASSWORD} ${FORMAT} ${HEADER} ${GEO_COUNTRY} ${INPUT}
+	eval youtube-dl -s ${USERNAME} ${PASSWORD} ${COOKIES} ${USER_AGENT} ${FORMAT} ${HEADER} ${GEO_COUNTRY} ${INPUT}
 	handlesignal "Exitting due to an error in input URL..."
 fi
 rm -r "${TMP_FILE}"
@@ -373,7 +392,8 @@ do
 	greencon "STEP 0. QUEUE INPUT URL #${c}."
 	echo "${INPUT}"
 	greencon "STEP 1. GET CRUNCHYROLL STREAMING DOWNLOAD."
-	youtube-dl --no-warnings --no-continue --no-part --all-subs ${USERNAME} ${PASSWORD} ${COOKIES} ${FORMAT} ${HEADER} ${GEO_COUNTRY} ${INPUT}
+	echo youtube-dl --no-warnings --no-continue --no-part --all-subs ${USERNAME} ${PASSWORD} ${COOKIES} ${USER_AGENT} ${FORMAT} ${HEADER} ${GEO_COUNTRY} ${INPUT}
+	eval youtube-dl --no-warnings --no-continue --no-part --all-subs ${USERNAME} ${PASSWORD} ${COOKIES} ${USER_AGENT} ${FORMAT} ${HEADER} ${GEO_COUNTRY} ${INPUT}
 	if [ ${?} -ne 0 ]
 	then
 		handlesignal "Failed to get streaming! Exitting..."
