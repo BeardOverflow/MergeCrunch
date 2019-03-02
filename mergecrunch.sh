@@ -271,7 +271,7 @@ do
 			GEO_COUNTRY="${2}"
 			shift
 		;;
-		--ua)
+		--ua|--user-agent)
 			USER_AGENT="${2}"
 			shift
 		;;
