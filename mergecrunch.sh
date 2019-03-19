@@ -5,7 +5,7 @@
 # Author:      José Ángel Pastrana Padilla
 # Email:       japp0005@red.ujaen.es
 # Last update: 2019-03-19
-# Revision:    22
+# Revision:    23
 
 # DEPENDENCIES:
 
@@ -34,8 +34,8 @@ CRC32="" # Default: "" (Means disabled). Change to "YES" for always active
 
 # This argument sets video resolution.
 # By command line, it is "-f value" or "--format value".
-# Default: "" (Means best resolution). 
-# Change to other value as "worst", "360p", "480p", "720p", "1080p", "best".
+# Default: "" (Means best resolution).
+# Change to other value as "worst", "240p", "360p", "480p", "720p", "1080p", "best".
 FORMAT=""
 
 # This argument sets user agent.
@@ -45,6 +45,10 @@ USER_AGENT=""
 # Only the language specified on SUB_DEFAULT (-s) will be merged
 # By command line, it is, for example, "--one -s esES"
 ONE_SUBTITLE=""  # Default: "" (Means disabled). Change to "YES" for always active
+
+# Ship hard subtitle specified by SUB_DEFAULT (-s). Implies ONE_SUBTITLE
+# By command line, it is, for example, "--hard -s esES"
+HARD_SUBTITLE="" # Default: "" (Means disabled). Change to "YES" for always active
 
 # For further references: ISO 639 and mkvmerge --list-languages
 # This argument sets default track subtitle if your player doesn't set this field.
@@ -85,16 +89,30 @@ GEO_COUNTRY="" # Default: "" (Means your actual IP country)
 TMP_DIR="/tmp/${$}"
 DEST_DIR="$(pwd)"
 declare -A FORMAT_SUP
-FORMAT_SUP["worst"]="worst"
-FORMAT_SUP["360p"]="best[height=360]"
-FORMAT_SUP["480p"]="best[height=480]"
-FORMAT_SUP["720p"]="best[height=720]"
-FORMAT_SUP["1080p"]="best[height=1080]"
-FORMAT_SUP["360"]="best[height=360]"
-FORMAT_SUP["480"]="best[height=480]"
-FORMAT_SUP["720"]="best[height=720]"
-FORMAT_SUP["1080"]="best[height=1080]"
-FORMAT_SUP["best"]="best"
+FORMAT_SUP["worst"]="worst[format_id !*= hardsub]"
+FORMAT_SUP["240p"]="best[format_id !*= hardsub][height=240]"
+FORMAT_SUP["360p"]="best[format_id !*= hardsub][height=360]"
+FORMAT_SUP["480p"]="best[format_id !*= hardsub][height=480]"
+FORMAT_SUP["720p"]="best[format_id !*= hardsub][height=720]"
+FORMAT_SUP["1080p"]="best[format_id !*= hardsub][height=1080]"
+FORMAT_SUP["240"]="best[format_id !*= hardsub][height=240]"
+FORMAT_SUP["360"]="best[format_id !*= hardsub][height=360]"
+FORMAT_SUP["480"]="best[format_id !*= hardsub][height=480]"
+FORMAT_SUP["720"]="best[format_id !*= hardsub][height=720]"
+FORMAT_SUP["1080"]="best[format_id !*= hardsub][height=1080]"
+FORMAT_SUP["best"]="best[format_id !*= hardsub]"
+FORMAT_SUP["hard-worst"]="worst[format_id *= hardsub]"
+FORMAT_SUP["hard-240p"]="best[format_id *= hardsub][height=240]"
+FORMAT_SUP["hard-360p"]="best[format_id *= hardsub][height=360]"
+FORMAT_SUP["hard-480p"]="best[format_id *= hardsub][height=480]"
+FORMAT_SUP["hard-720p"]="best[format_id *= hardsub][height=720]"
+FORMAT_SUP["hard-1080p"]="best[format_id *= hardsub][height=1080]"
+FORMAT_SUP["hard-240"]="best[format_id *= hardsub][height=240]"
+FORMAT_SUP["hard-360"]="best[format_id *= hardsub][height=360]"
+FORMAT_SUP["hard-480"]="best[format_id *= hardsub][height=480]"
+FORMAT_SUP["hard-720"]="best[format_id *= hardsub][height=720]"
+FORMAT_SUP["hard-1080"]="best[format_id *= hardsub][height=1080]"
+FORMAT_SUP["hard-best"]="best[format_id *= hardsub]"
 declare -A SUB_LANG
 SUB_LANG["enUS","tag"]="eng"
 SUB_LANG["enUS","cty"]="English (USA)"
@@ -252,7 +270,7 @@ do
 			        echo "Edit this script and add it in FORMAT_SUP array."
 			        exit -1
 			fi
-			FORMAT="${FORMAT_SUP["${2,,}"]}"
+			FORMAT="${2,,}"
 			shift
 		;;
 		-s|--sub_default)
@@ -282,6 +300,9 @@ do
 		--one)
 			ONE_SUBTITLE="YES"
 		;;
+		--hard)
+			HARD_SUBTITLE="YES"
+		;;
 		*)
 			echo "Error. Unexpected argument: ${1}"
 			exit -1
@@ -305,9 +326,24 @@ else
 	echo "Error. Crunchyroll sets new restrictions. You must specify a cookies file (for example, -c cookies.txt). More info in README.md"
 	exit -1
 fi
+if [ -n "${HARD_SUBTITLE}" ] && [ -z "${SUB_DEFAULT}" ]
+then
+	echo "Error. If you use --hard option, then you must specify the default subtitle language using -s option"
+	exit -1
+fi
 if [ -n "${FORMAT}" ]
 then
-	FORMAT="-f ${FORMAT}"
+	if [ -n "${HARD_SUBTITLE}" ]
+	then
+		FORMAT="-f '${FORMAT_SUP["hard-${FORMAT}"]}[format_id *= -${SUB_DEFAULT}-]'"
+	else
+		FORMAT="-f '${FORMAT_SUP["${FORMAT}"]}'"
+	fi
+else
+	if [ -n "${HARD_SUBTITLE}" ]
+	then
+		FORMAT="-f '[format_id *= -${SUB_DEFAULT}-]'"
+	fi
 fi
 if [ -n "${SUB_DEFAULT}" ]
 then
@@ -425,6 +461,10 @@ do
 	greencon "STEP 2. CHECKING AVAILABLE SUBTITLES."
 	if ls *.ass >/dev/null 2>/dev/null
 	then
+		if [ -n "${HARD_SUBTITLE}" ]
+		then
+			yellowcon "Hard subtitle enabled. Skip this step."
+		else
 		for each in *.ass
 		do
 			sl=${each%.ass}
@@ -445,6 +485,7 @@ do
 			echo "Found ${SUB_LANG["${sl}","cty"]} subtitle!... Ready."
 			SUB_MKV+=("--language \"0:${SUB_LANG["${sl}","tag"]}\" --track-name \"0:${SUB_LANG["${sl}","cty"]}\" ${def} '(' \"${each}\" ')'")
 		done
+		fi
 	else
 		yellowcon "Not found any subtitle track."
 	fi
@@ -453,6 +494,10 @@ do
 	greencon "STEP 3. CHECKING AVAILABLES ATTACHMENT FONTS TEXT."
 	if ls *.ass >/dev/null 2>/dev/null
 	then
+		if [ -n "${HARD_SUBTITLE}" ]
+		then
+			yellowcon "Hard subtitle enabled. Skip this step."
+		else
 		for each in *.ass
 		do
 			while read -r line
@@ -474,6 +519,7 @@ do
 			fi
 			FONT_MKV+=("--attach-file \"$(fc-match -v "${line}" | grep "file:" | cut -d'"' -f2)\"")
 		done <<< "$(printf "%s\n" "${fonts[@]}" | sort -u)"
+		fi
 	else
 		yellowcon "Not required any attachment."
 	fi

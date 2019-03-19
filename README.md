@@ -18,7 +18,9 @@ Now support to spoof your location!!
 
 Now support to spoof your user-agent!!
 
-==Tested in Ubuntu 16.04 Xenial and Debian 9 Stretch==
+Now support for hardsub or softsub both!!
+
+==Tested in Ubuntu 16.04 Xenial, 18.04 Bionic and Debian 9 Stretch, 10 Buster==
 
 ## Dependencies
 
@@ -96,6 +98,13 @@ arME     | Forces العربية
 ruRU     | Forces Русский
 jaJP     | Forces 日本語
 
+**Hardsub switch (argument --hard):**
+
+If you wish download a hardsub video instead of merging a soft subtitle track, you can append the --hard argument. Require -s argument and implies --one argument.
+
+```sh
+./mergecrunch.sh -i URL_CRUNCH_HERE -x -f 720p --hard -s esES
+```
 
 **Spoof location (argument -g):**
 

@@ -1,4 +1,6 @@
 2018-03-02
+	-- Rev. 23 --
+		[New] Argument --hard for downloading hardsub video instead of softsub tracks.
 	-- Rev. 22 --
 		[New] Argument --one for downloading exclusively the subtitle track specified by argument -s.
 
