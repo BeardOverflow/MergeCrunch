@@ -73,14 +73,14 @@ worst  | The worst resolution available (generally 360p or 480p)
 1080p  | 1920x1080
 best   | The best resolution available (generally 480p or 1080p)
 
-**Preferred language (argument -s):**
+**Preferred language (argument -s) + Only one language (argument --one):**
 
 Using a preferred language, you set a default subtitle track in your mkv. Also, title description and default output filename are set according to this language.
 
 ```sh
-./mergecrunch.sh -i URL_CRUNCH_HERE -x -f 720p -s esES
+./mergecrunch.sh -i URL_CRUNCH_HERE -x -f 720p --one -s esES
 ```
-Same top, but now I set spanish subtitle track as preferred.
+Same top, but now I set spanish subtitle track as preferred. If you append the --one argument, then esES subtitle track will merged exclusively.
 
 Language | Description
 -------- | -----------

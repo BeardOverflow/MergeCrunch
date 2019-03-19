@@ -1,4 +1,8 @@
 2018-03-02
+	-- Rev. 22 --
+		[New] Argument --one for downloading exclusively the subtitle track specified by argument -s.
+
+2018-03-02
 	-- Rev. 21 --
 		[New] Support for setting your user-agent.
 

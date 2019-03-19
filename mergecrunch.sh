@@ -4,8 +4,8 @@
 # Description: Download from Crunchyroll and generate a pretty mkv file with all video, subtitles and fonts merged.
 # Author:      José Ángel Pastrana Padilla
 # Email:       japp0005@red.ujaen.es
-# Last update: 2019-03-02
-# Revision:    21
+# Last update: 2019-03-19
+# Revision:    22
 
 # DEPENDENCIES:
 
@@ -41,6 +41,10 @@ FORMAT=""
 # This argument sets user agent.
 # By command line, it is, for example, "--ua 'Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0'"
 USER_AGENT=""
+
+# Only the language specified on SUB_DEFAULT (-s) will be merged
+# By command line, it is, for example, "--one -s esES"
+ONE_SUBTITLE=""  # Default: "" (Means disabled). Change to "YES" for always active
 
 # For further references: ISO 639 and mkvmerge --list-languages
 # This argument sets default track subtitle if your player doesn't set this field.
@@ -275,6 +279,9 @@ do
 			USER_AGENT="${2}"
 			shift
 		;;
+		--one)
+			ONE_SUBTITLE="YES"
+		;;
 		*)
 			echo "Error. Unexpected argument: ${1}"
 			exit -1
@@ -320,6 +327,14 @@ then
 else
 	echo "Error. Crunchyroll sets new restrictions. You must specify an user-agent (for example, --ua 'Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0'). More info in README.md"
 	exit -1
+fi
+if [ -n "${ONE_SUBTITLE}" ]
+then
+	if [ -z "${SUB_DEFAULT}" ]
+	then
+		echo "Error. If you use --one option, then you must specify the default subtitle language using -s option"
+		exit -1
+	fi
 fi
 
 # MAIN...
@@ -423,6 +438,9 @@ do
 			if [ "${SUB_DEFAULT}" = "${sl}" ]
 			then
 				def="--default-track 0:yes --forced-track 0:yes"
+			elif [ -n "${ONE_SUBTITLE}" ]
+			then
+				continue
 			fi
 			echo "Found ${SUB_LANG["${sl}","cty"]} subtitle!... Ready."
 			SUB_MKV+=("--language \"0:${SUB_LANG["${sl}","tag"]}\" --track-name \"0:${SUB_LANG["${sl}","cty"]}\" ${def} '(' \"${each}\" ')'")
