@@ -1,4 +1,4 @@
-# MergeCrunch
+![](/logo.png)
 
 ***
 
