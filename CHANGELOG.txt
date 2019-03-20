@@ -1,4 +1,9 @@
-2018-03-02
+2018-03-20
+	-- Rev. 24 --
+		[Refactor] Show a warning about using the arguments --ua and --cookies instead of force its use
+		[Docker] First dockerized version at https://hub.docker.com/r/beardoverflow/mergecrunch
+
+2018-03-19
 	-- Rev. 23 --
 		[New] Argument --hard for downloading hardsub video instead of softsub tracks.
 	-- Rev. 22 --

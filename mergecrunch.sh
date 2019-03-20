@@ -4,8 +4,8 @@
 # Description: Download from Crunchyroll and generate a pretty mkv file with all video, subtitles and fonts merged.
 # Author:      José Ángel Pastrana Padilla
 # Email:       japp0005@red.ujaen.es
-# Last update: 2019-03-19
-# Revision:    23
+# Last update: 2019-03-20
+# Revision:    24
 
 # DEPENDENCIES:
 
@@ -323,8 +323,7 @@ then
 	WGET_COOKIES="--load-cookies \"${COOKIES}\""
 	COOKIES="--cookies '${COOKIES}'"
 else
-	echo "Error. Crunchyroll sets new restrictions. You must specify a cookies file (for example, -c cookies.txt). More info in README.md"
-	exit -1
+	yellowcon "Warning. Crunchyroll will enable future restrictions soon. If there is any problem while downloading, try to specify a cookies file (for example, -c cookies.txt). More info at README.md"
 fi
 if [ -n "${HARD_SUBTITLE}" ] && [ -z "${SUB_DEFAULT}" ]
 then
@@ -361,8 +360,7 @@ then
 	WGET_USER_AGENT="--user-agent \"${USER_AGENT}\""
 	USER_AGENT="--user-agent '${USER_AGENT}'"
 else
-	echo "Error. Crunchyroll sets new restrictions. You must specify an user-agent (for example, --ua 'Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0'). More info in README.md"
-	exit -1
+	yellowcon "Warning. Crunchyroll will enable future restrictions soon. If there is any problem while downloading, try to specify an user-agent (for example, --ua 'Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101 Firefox/60.0'). More info at README.md"
 fi
 if [ -n "${ONE_SUBTITLE}" ]
 then
